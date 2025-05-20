@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% if title %}
+        <title>{{ title }}</title>
+        {% else %}
+        <title>Goalblog</title>
+        {% endif %}
+    </head>
+    <body>
+    <nav>
+        <div>
+            <ul>
+                <li>
+                    <a href="{{ url_for('index') }}">Home</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    {% block content %} {% endblock %}
+
+    
+    </body>
+</html>
