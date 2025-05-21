@@ -2,3 +2,4 @@
 goalblog_venv
 __pycache__
 notes.txt
+.env
