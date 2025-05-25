@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Hello, {{ user.username }}</h1>
+{% if current_user.is_authenticated %}
+  Hello {{ current_user.username }}!
+{% endif %}
 <h3>Your goals:</h3>
 <ul>
 {% for goal in goals %}
