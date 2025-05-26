@@ -74,6 +74,15 @@ def logout():
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
+        register_form = form.data
+        print(register_form)
+        user = User(username=register_form['username'],
+                    email=register_form['email'])
+        user.set_password(register_form['password'])
+
+        db.session.add(user)
+        db.session.commit()
+
         flash('User registrated!')
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     return render_template('register.html', form=form)

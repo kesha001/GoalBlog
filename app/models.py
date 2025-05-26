@@ -19,7 +19,7 @@ class User(db.Model, UserMixin):
     email: so.Mapped[str] = so.mapped_column(sa.String(70), unique=True)
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100))
 
-
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
