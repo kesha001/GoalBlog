@@ -7,7 +7,7 @@
 <h3>Your goals:</h3>
 <ul>
 {% for goal in goals %}
-    <li>{{ goal.title }}</li>
+    <li>Author: {{ goal.author.username }}, text: {{ goal.body }}, created: {{ goal.timestamp }}</li>
 {% endfor %}
 </ul>
 

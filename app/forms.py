@@ -4,7 +4,6 @@ from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from app import db
 from app.models import User
 import sqlalchemy as sa
-import flask
 
 
 

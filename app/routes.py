@@ -14,27 +14,31 @@ from urllib.parse import urlparse
 @app.route('/index')
 @login_required
 def index():
-    print(url_for('index'))
+    # print(url_for('index'))
 
-    user = {'username': 'John'}
-    # list of goals , think about structure of these goals
-    # it should be a group of goals with title and goals inside
-    goals = [
+    # user = {'username': 'John'}
+    # # list of goals , think about structure of these goals
+    # # it should be a group of goals with title and goals inside
+    # goals = [
     
-    {
-        "author": {'username': 'John'},
-        "title": "Make a goal",
-        "body": "make that goal is on webpage"
-    },
-    {
-        "author": {'username': 'Susan'},
-        "title": "Find a job",
-        "body": "learn, get skills, pass intervju"
-    },
-    ]
+    # {
+    #     "author": {'username': 'John'},
+    #     "title": "Make a goal",
+    #     "body": "make that goal is on webpage"
+    # },
+    # {
+    #     "author": {'username': 'Susan'},
+    #     "title": "Find a job",
+    #     "body": "learn, get skills, pass intervju"
+    # },
+    # ]
+
+    goals = db.session.scalars(
+        current_user.goals.select()
+    ).all()
 
 
-    return render_template('index.html', user=user, goals=goals)
+    return render_template('index.html', goals=goals)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

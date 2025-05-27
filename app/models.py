@@ -4,6 +4,8 @@ import sqlalchemy as sa
 from app import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from datetime import datetime, timezone
+
 
 
 @login_manager.user_loader
@@ -19,6 +21,8 @@ class User(db.Model, UserMixin):
     email: so.Mapped[str] = so.mapped_column(sa.String(70), unique=True)
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100))
 
+    goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
+
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -29,3 +33,12 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'User: {self.id} {self.username}'
+    
+
+class Goal(db.Model):
+    id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    body: so.Mapped[str] = so.mapped_column(sa.String(256))
+    user_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=datetime.now(timezone.utc))
+
+    author: so.Mapped['User'] = so.relationship(back_populates='goals')
