@@ -1,7 +1,7 @@
 from app import app
-from app.forms import LoginForm, RegisterForm
+from app.forms import LoginForm, RegisterForm, EditProfileForm
 from app.models import User
-from flask import url_for, render_template, redirect, flash
+from flask import url_for, render_template, redirect, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User
 from app import db
@@ -14,24 +14,6 @@ from urllib.parse import urlparse
 @app.route('/index')
 @login_required
 def index():
-    # print(url_for('index'))
-
-    # user = {'username': 'John'}
-    # # list of goals , think about structure of these goals
-    # # it should be a group of goals with title and goals inside
-    # goals = [
-    
-    # {
-    #     "author": {'username': 'John'},
-    #     "title": "Make a goal",
-    #     "body": "make that goal is on webpage"
-    # },
-    # {
-    #     "author": {'username': 'Susan'},
-    #     "title": "Find a job",
-    #     "body": "learn, get skills, pass intervju"
-    # },
-    # ]
 
     goals = db.session.scalars(
         current_user.goals.select()
@@ -39,6 +21,44 @@ def index():
 
 
     return render_template('index.html', goals=goals)
+
+
+@app.route('/user/<username>', methods=['GET'])
+@login_required
+def user(username):
+
+    query = sa.select(User).where(User.username == username)
+    user = db.one_or_404(query)
+
+    goals = db.session.scalars(
+        user.goals.select()
+    ).all()
+    
+    return render_template('user.html', user=user, goals=goals)
+
+
+@app.route('/user/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+
+    form = EditProfileForm(original_username=current_user.username)
+    if request.method == 'GET':
+        # Prepopulate
+        form.username.data = current_user.username
+        form.bio.data = current_user.bio
+        
+    if form.validate_on_submit():
+
+        current_user.username = form.username.data    
+        current_user.bio = form.bio.data
+
+        db.session.commit()
+
+        flash('Changes saved!')
+        return redirect(url_for('edit_profile'))
+
+    return render_template('edit_profile.html', form=form)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

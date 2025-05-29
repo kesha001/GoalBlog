@@ -21,6 +21,9 @@ class User(db.Model, UserMixin):
     email: so.Mapped[str] = so.mapped_column(sa.String(70), unique=True)
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100))
 
+    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(default=datetime.now(timezone.utc))
+    bio: so.Mapped[Optional[str]] = so.mapped_column(sa.String(300))
+
     goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
 
     

@@ -5,10 +5,10 @@
   Hello {{ current_user.username }}!
 {% endif %}
 <h3>Your goals:</h3>
-<ul>
+
 {% for goal in goals %}
-    <li>Author: {{ goal.author.username }}, text: {{ goal.body }}, created: {{ goal.timestamp }}</li>
+    {% include '_goal.html' %} <br>
 {% endfor %}
-</ul>
+
 
 {% endblock %}
