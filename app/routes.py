@@ -8,6 +8,7 @@ from app import db
 import sqlalchemy as sa
 import flask
 
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 @app.route('/')
@@ -58,6 +59,13 @@ def edit_profile():
         return redirect(url_for('edit_profile'))
 
     return render_template('edit_profile.html', form=form)
+
+
+@app.before_request
+def update_last_seen():
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.now(timezone.utc)
+        db.session.commit()
 
 
 @app.route('/login', methods=['GET', 'POST'])
