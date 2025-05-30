@@ -2,16 +2,24 @@
 
 {% block content %}
 
-<h1> {{ user.username }} </h1>
-<p>
-    Last seen: {{ user.last_seen if user.last_seen else "" }}
-</p>
-<p>
-    Bio: {{ user.bio if user.bio else "" }}
-</p>
-{% if current_user.id == user.id %}
-    <a href="{{ url_for('edit_profile') }}">Edit profile</a>
-{% endif %}
+
+<table>
+  <tr>
+    <td><img src="{{ user.get_avatar(size=100) }}"></td>
+    <td><h1> {{ user.username }} </h1></td>
+  </tr>
+  <tr>
+    <td>Bio: {{ user.bio if user.bio else "" }}</td>
+    <td>Last seen: {{ user.last_seen if user.last_seen else "" }}</td>
+  </tr>
+  <tr>
+    <td>
+    {% if current_user.id == user.id %}
+        <a href="{{ url_for('edit_profile') }}">Edit profile</a>
+    {% endif %}
+    </td>
+  </tr>
+</table>
 <hr>
 {% for goal in goals %}
     {% include '_goal.html' %} <br>

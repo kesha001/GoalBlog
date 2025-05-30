@@ -5,6 +5,7 @@ from app import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime, timezone
+from hashlib import sha256
 
 
 
@@ -26,6 +27,11 @@ class User(db.Model, UserMixin):
 
     goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
 
+    
+    def get_avatar(self, size=80):
+        email_bytestring = bytes(self.email, 'utf-8')
+        email_hash = sha256(email_bytestring).hexdigest()
+        return f'https://gravatar.com/avatar/{email_hash}?d=monsterid&s={size}'
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
