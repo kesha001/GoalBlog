@@ -8,6 +8,7 @@ from flask_login import current_user
 
 
 
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -56,3 +57,9 @@ class EditProfileForm(FlaskForm):
 
             if user:
                 raise ValidationError("Please use another username")
+            
+
+class GoalForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired(), Length(max=40)])
+    body = TextAreaField("Your goal")
+    submit = SubmitField('Submit')

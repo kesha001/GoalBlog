@@ -4,7 +4,26 @@
 {% if current_user.is_authenticated %}
   Hello {{ current_user.username }}!
 {% endif %}
-<h3>Your goals:</h3>
+
+
+<h3>Create goal:</h3>
+  <form action="" method="post" novalidate>
+    <p>{{ form.hidden_tag() }}
+    {{ form.title.label }} <br>
+    {{ form.title(size=40) }} <br>
+    {% for error in form.title.errors %}
+      <span style="color: red">{{ error }}</span>
+    {% endfor %} </p>
+
+    <p>{{ form.hidden_tag() }}
+    {{ form.body.label }} <br>
+    {{ form.body(cols=50, rows=5) }} <br>
+    {% for error in form.title.errors %}
+      <span style="color: red">{{ error }}</span>
+    {% endfor %} </p>
+
+    {{ form.submit }}
+  </form>
 
 {% for goal in goals %}
     {% include '_goal.html' %} <br>

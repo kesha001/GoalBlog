@@ -1,6 +1,6 @@
 from app import app
-from app.forms import LoginForm, RegisterForm, EditProfileForm
-from app.models import User
+from app.forms import LoginForm, RegisterForm, EditProfileForm, GoalForm
+from app.models import User, Goal
 from flask import url_for, render_template, redirect, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User
@@ -12,16 +12,28 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 @app.route('/')
-@app.route('/index')
+@app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
 
+    form = GoalForm()
+    if form.validate_on_submit():
+        goal = Goal()
+        goal.body = form.body.data
+        current_user.goals.add(goal)
+        db.session.commit()
+
+        flash(f"Postet  {form.title.data}")
+
+        return redirect(url_for('index'))
+
     goals = db.session.scalars(
-        current_user.goals.select()
+        current_user.goals.select().order_by(sa.desc(Goal.timestamp))
     ).all()
 
+    print(current_user.goals.select().order_by(sa.desc(Goal.timestamp)))
 
-    return render_template('index.html', goals=goals)
+    return render_template('index.html', goals=goals, form=form)
 
 
 @app.route('/user/<username>', methods=['GET'])
