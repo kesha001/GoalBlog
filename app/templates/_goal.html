@@ -1,12 +1,13 @@
 
 <table>
   <tr>
-    <td>Author: {{ goal.author.username }} Created: {{ goal.timestamp }}</td>
-  </tr>
-  <tr>
-    <td>text: {{ goal.body }}</td>
-  </tr>
-  <tr>
-    <td></td>
+  <td>
+    <img src="{{ goal.author.get_avatar(size=50) }}">
+  </td>
+  <td>
+    <p>Author: {{ goal.author.username }} </p>
+    <p>text: {{ goal.body }} </p>
+    <p>Created: {{ goal.timestamp }}</p>
+  </td>
   </tr>
 </table>

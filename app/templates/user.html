@@ -5,17 +5,14 @@
 
 <table>
   <tr>
-    <td><img src="{{ user.get_avatar(size=100) }}"></td>
-    <td><h1> {{ user.username }} </h1></td>
-  </tr>
-  <tr>
-    <td>Bio: {{ user.bio if user.bio else "" }}</td>
-    <td>Last seen: {{ user.last_seen if user.last_seen else "" }}</td>
-  </tr>
-  <tr>
+    <td><img src="{{ user.get_avatar(size=130) }}"></td>
     <td>
+    <h1> {{ user.username }} </h1>
+    <p>Bio: {{ user.bio if user.bio else "" }}</p>
+    <p>Last seen: {{ user.last_seen if user.last_seen else "" }}</p>
+    
     {% if current_user.id == user.id %}
-        <a href="{{ url_for('edit_profile') }}">Edit profile</a>
+        <p><a href="{{ url_for('edit_profile') }}">Edit profile</a></p>
     {% endif %}
     </td>
   </tr>

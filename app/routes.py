@@ -31,7 +31,7 @@ def index():
         current_user.goals.select().order_by(sa.desc(Goal.timestamp))
     ).all()
 
-    print(current_user.goals.select().order_by(sa.desc(Goal.timestamp)))
+    # print(current_user.goals.select().order_by(sa.desc(Goal.timestamp)))
 
     return render_template('index.html', goals=goals, form=form)
 
@@ -72,6 +72,16 @@ def edit_profile():
 
     return render_template('edit_profile.html', form=form)
 
+
+@app.route('/explore', methods=['GET'])
+@login_required
+def explore():
+
+    goals = db.session.scalars(
+        sa.select(Goal).order_by(sa.desc(Goal.timestamp))
+    ).all()
+
+    return render_template('index.html', goals=goals)
 
 @app.before_request
 def update_last_seen():

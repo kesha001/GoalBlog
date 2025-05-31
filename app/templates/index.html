@@ -5,7 +5,7 @@
   Hello {{ current_user.username }}!
 {% endif %}
 
-
+{% if form %}
 <h3>Create goal:</h3>
   <form action="" method="post" novalidate>
     <p>{{ form.hidden_tag() }}
@@ -18,12 +18,13 @@
     <p>{{ form.hidden_tag() }}
     {{ form.body.label }} <br>
     {{ form.body(cols=50, rows=5) }} <br>
-    {% for error in form.title.errors %}
+    {% for error in form.body.errors %}
       <span style="color: red">{{ error }}</span>
     {% endfor %} </p>
 
     {{ form.submit }}
   </form>
+{% endif %}
 
 {% for goal in goals %}
     {% include '_goal.html' %} <br>

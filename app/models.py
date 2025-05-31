@@ -22,7 +22,7 @@ class User(db.Model, UserMixin):
     email: so.Mapped[str] = so.mapped_column(sa.String(70), unique=True)
     password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100))
 
-    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(default=datetime.now(timezone.utc))
+    last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
     bio: so.Mapped[Optional[str]] = so.mapped_column(sa.String(300))
 
     goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
@@ -48,6 +48,6 @@ class Goal(db.Model):
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
     body: so.Mapped[str] = so.mapped_column(sa.String(256))
     user_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
-    timestamp: so.Mapped[datetime] = so.mapped_column(default=datetime.now(timezone.utc))
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
 
     author: so.Mapped['User'] = so.relationship(back_populates='goals')
