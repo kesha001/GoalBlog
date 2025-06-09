@@ -15,8 +15,17 @@ def load_user(user_id: str):
     return db.session.get(User, user_id)
 
 
+user_following = db.Table(
+    "user_following",
+    sa.Column("follower_id", sa.Integer, sa.ForeignKey("user.id"), primary_key=True),
+    sa.Column("followed_id", sa.Integer, sa.ForeignKey("user.id"), primary_key=True)
+)
+
+
 
 class User(db.Model, UserMixin):
+    __tablename__ = "user"
+
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
     username: so.Mapped[str] = so.mapped_column(sa.String(50), unique=True)
     email: so.Mapped[str] = so.mapped_column(sa.String(70), unique=True)
@@ -27,11 +36,77 @@ class User(db.Model, UserMixin):
 
     goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
 
+    followers: so.WriteOnlyMapped['User'] = so.relationship(
+        "User",
+        secondary= user_following,
+        primaryjoin= lambda: User.id==user_following.c.followed_id,
+        secondaryjoin= lambda: User.id==user_following.c.follower_id,
+        back_populates= "following",
+    )
+
+    following: so.WriteOnlyMapped['User'] = so.relationship(
+        "User",
+        secondary= user_following,
+        primaryjoin= lambda: User.id==user_following.c.follower_id,
+        secondaryjoin= lambda: User.id==user_following.c.followed_id,
+        back_populates= "followers",
+    )
+
     
     def get_avatar(self, size=80):
         email_bytestring = bytes(self.email, 'utf-8')
         email_hash = sha256(email_bytestring).hexdigest()
         return f'https://gravatar.com/avatar/{email_hash}?d=monsterid&s={size}'
+    
+    def get_following(self):
+        user = db.session.get(User, self.id)
+        query = user.following.select()
+
+        return db.session.scalars(query).all()
+    
+    def is_followed(self, user):
+        query = self.following.select().where(User.id==user.id)
+        return db.session.scalar(query)
+    
+    # def follow(self, user):
+    #     self.following.add(user)
+    #     db.session.commit()
+    
+    
+    def count_followers(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.followers.select().subquery()
+        )
+        return db.session.scalar(query)
+    
+    def count_following(self):
+        query = sa.select(sa.func.count()).select_from(
+            self.following.select().subquery()
+        )
+        return db.session.scalar(query)
+    
+    def get_following_posts(self):
+        main_user = so.aliased(User)
+        users_followings = so.aliased(User) 
+        
+        u = sa.union_all(
+        # Goals of those who main user follows
+        sa.select(Goal)
+            .join(main_user.following.of_type(users_followings))
+            .join(users_followings.goals)
+            .where(main_user.id==self.id),
+        # Goals of main user
+        sa.select(Goal)
+            .join(main_user.goals)
+            .where(main_user.id==self.id)
+        ).order_by(sa.desc(Goal.timestamp))
+
+        goals = db.session.scalars(
+            sa.select(Goal)
+            .from_statement(u)
+        ).all()
+
+        return goals
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -42,7 +117,9 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f'User: {self.id} {self.username}'
-    
+
+
+
 
 class Goal(db.Model):
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
