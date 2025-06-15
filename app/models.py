@@ -64,14 +64,17 @@ class User(db.Model, UserMixin):
 
         return db.session.scalars(query).all()
     
-    def is_followed(self, user):
+    def is_following(self, user):
         query = self.following.select().where(User.id==user.id)
         return db.session.scalar(query)
     
-    # def follow(self, user):
-    #     self.following.add(user)
-    #     db.session.commit()
-    
+    def follow(self, user):
+        if not self.is_following(user):
+            self.following.add(user)
+        
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.following.remove(user)
     
     def count_followers(self):
         query = sa.select(sa.func.count()).select_from(

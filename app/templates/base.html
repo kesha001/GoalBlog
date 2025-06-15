@@ -44,6 +44,40 @@
 
     {% block content %} {% endblock %}
 
-    
+    <script>
+        
+    </script>
+            
     </body>
 </html>
+
+{# 
+async function followFunction(element, user_id) {
+            var csrf_token = "{{ csrf_token() }}";
+            var follow_URI = "{{ url_for('follow') }}"
+            try{
+                const response = await fetch('/user/follow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf_token
+                    },
+                    body: JSON.stringify({
+                        user_id: user_id,
+                        action: element.value
+                    })
+                });
+
+                if (!response.ok) {
+                    const message = `An error has occured: ${response.status}`;
+                    throw new Error(message);
+                }
+                var data = await response.json();
+
+                element.value = data['new_follow_status']
+
+            } catch (error){
+                console.log('There was an error', error);
+            }
+        }
+ #}

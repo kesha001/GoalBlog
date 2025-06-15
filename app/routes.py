@@ -1,11 +1,12 @@
 from app import app
-from app.forms import LoginForm, RegisterForm, EditProfileForm, GoalForm
+from app.forms import LoginForm, RegisterForm, EditProfileForm, GoalForm, FollowForm
 from app.models import User, Goal
-from flask import url_for, render_template, redirect, flash, request
+from flask import url_for, render_template, redirect, flash, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User
 from app import db
 import sqlalchemy as sa
+import sqlalchemy.orm as so
 import flask
 
 from datetime import datetime, timezone
@@ -27,13 +28,11 @@ def index():
 
         return redirect(url_for('index'))
 
-    goals = db.session.scalars(
-        current_user.goals.select().order_by(sa.desc(Goal.timestamp))
-    ).all()
+    goals = current_user.get_following_posts()
 
-    # print(current_user.goals.select().order_by(sa.desc(Goal.timestamp)))
+    followings = current_user.get_following()
 
-    return render_template('index.html', goals=goals, form=form)
+    return render_template('index.html', goals=goals, form=form, followings=followings)
 
 
 @app.route('/user/<username>', methods=['GET'])
@@ -46,9 +45,62 @@ def user(username):
     goals = db.session.scalars(
         user.goals.select()
     ).all()
-    
-    return render_template('user.html', user=user, goals=goals)
 
+    form = FollowForm()
+    
+    return render_template('user.html', user=user, goals=goals, form=form)
+
+
+@app.route('/follow/<username>', methods=['POST'])
+@login_required
+def follow(username):
+
+    form = FollowForm()
+
+    if form.validate_on_submit():
+        query = sa.select(User).where(User.username == username)
+        user = db.session.scalar(query)
+        if not user:
+            flash(f'{user.username} not found')
+            return redirect(url_for('index'))
+        elif current_user.id == user.id:
+            flash(f'{user.username}, can not follow yourself')
+            return redirect(url_for('user', username=username))
+        else:
+            current_user.follow(user)
+            db.session.commit()
+            flash(f'{user.username} has been followed')
+            return redirect(url_for('user', username=username))
+            
+    return redirect(url_for('index'))
+    
+    
+
+@app.route('/unfollow/<username>', methods=['POST'])
+@login_required
+def unfollow(username):
+
+    form = FollowForm()
+
+    if form.validate_on_submit():
+        query = sa.select(User).where(User.username == username)
+        user = db.session.scalar(query)
+        if not user:
+            flash(f'{user.username} not found')
+            return redirect(url_for('index'))
+        elif current_user.id == user.id:
+            flash(f'{user.username}, can not unfollow yourself')
+            return redirect(url_for('user', username=username))
+        else:
+            current_user.unfollow(user)
+            db.session.commit()
+            flash(f'{user.username} has been unfollowed')
+            return redirect(url_for('user', username=username))
+            
+    return redirect(url_for('index'))
+    
+    
+    
 
 @app.route('/user/edit_profile', methods=['GET', 'POST'])
 @login_required

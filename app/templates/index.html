@@ -26,6 +26,11 @@
   </form>
 {% endif %}
 
+<p> Your followings: </p>
+{% for following in followings %}
+    {{ following.username }} - {{ following.id }}
+{% endfor %}
+
 {% for goal in goals %}
     {% include '_goal.html' %} <br>
 {% endfor %}

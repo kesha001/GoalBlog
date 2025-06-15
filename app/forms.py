@@ -63,3 +63,7 @@ class GoalForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired(), Length(max=40)])
     body = TextAreaField("Your goal")
     submit = SubmitField('Submit')
+
+
+class FollowForm(FlaskForm):
+    submit = SubmitField()
