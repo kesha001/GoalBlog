@@ -1,16 +1,16 @@
 from app import app
 from app.forms import LoginForm, RegisterForm, EditProfileForm, GoalForm, FollowForm
 from app.models import User, Goal
-from flask import url_for, render_template, redirect, flash, request, jsonify
+from flask import url_for, render_template, redirect, flash, request, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User
-from app import db
+from app import db, file_logger
 import sqlalchemy as sa
-import sqlalchemy.orm as so
 import flask
 
 from datetime import datetime, timezone
 from urllib.parse import urlparse
+
 
 @app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
@@ -38,7 +38,6 @@ def index():
 @app.route('/user/<username>', methods=['GET'])
 @login_required
 def user(username):
-
     query = sa.select(User).where(User.username == username)
     user = db.one_or_404(query)
 
@@ -192,3 +191,23 @@ def register():
         flash('User registrated!')
         return redirect(url_for('login'))
     return render_template('register.html', form=form)
+
+
+@app.after_request
+def logging_requests(response):
+
+    response_status = response.status_code
+    response_data = (request.remote_addr,
+                            request.method, 
+                            request.scheme, 
+                            request.full_path,
+                            response.status)
+     
+    if 500 <= response_status <= 599: 
+        file_logger.error("{} {} {} {} {} INTERNAL SERVER ERROR".format(*response_data))
+    if 400 <= response_status <= 499: 
+        file_logger.warning("{} {} {} {} {} CLIENT ERROR".format(*response_data))
+    else:
+        file_logger.info("{} {} {} {} {}".format(*response_data))
+    
+    return response

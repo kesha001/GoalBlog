@@ -5,3 +5,4 @@ notes.txt
 .env
 migrations
 *.db
+*.log
