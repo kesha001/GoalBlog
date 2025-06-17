@@ -7,6 +7,13 @@ class Config(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI") or \
     'sqlite:///' + os.path.join(basedir, 'app.db')
 
+    MAIL_SERVER = os.environ.get("MAIL_SERVER")
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_PORT = os.environ.get("MAIL_PORT")
+    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
+    # MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL") #even if ssl = false it causes error
+
 
     LOGGER_CONFIG = {
         'version': 1,

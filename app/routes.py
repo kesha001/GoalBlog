@@ -1,4 +1,4 @@
-from app import app
+from app import app, mail
 from app.forms import LoginForm, RegisterForm, EditProfileForm, GoalForm, FollowForm
 from app.models import User, Goal
 from flask import url_for, render_template, redirect, flash, request, abort
@@ -16,7 +16,6 @@ from urllib.parse import urlparse
 @app.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-
     form = GoalForm()
     if form.validate_on_submit():
         goal = Goal()
