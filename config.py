@@ -30,7 +30,7 @@ class Config(object):
             },
             'file': {
                 'class': 'logging.handlers.TimedRotatingFileHandler',
-                'filename': 'goalblog.log',
+                'filename': 'logs/goalblog.log',
                 'when': 'D',
                 'interval': 1,
                 'formatter': 'default'

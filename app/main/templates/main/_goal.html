@@ -2,13 +2,13 @@
 <table>
   <tr>
   <td>
-    <a href="{{ url_for('user', username=goal.author.username)}}">
+    <a href="{{ url_for('user_bp.user', username=goal.author.username)}}">
       <img src="{{ goal.author.get_avatar(size=50) }}">
     </a>
   </td>
   <td>
     <p> 
-    Author: <a href="{{ url_for('user', username=goal.author.username)}}">{{ goal.author.username }}</a> 
+    Author: <a href="{{ url_for('user_bp.user', username=goal.author.username)}}">{{ goal.author.username }}</a> 
     </p>
     <p>text: {{ goal.body }} </p>
     <p>Created: {{ goal.timestamp }}</p>

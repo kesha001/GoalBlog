@@ -15,16 +15,16 @@
     <p> {{ user.username }} follows: {{ user.count_following() }}</p>
     
     {% if current_user.id == user.id %}
-        <p><a href="{{ url_for('edit_profile') }}">Edit profile</a></p>
+        <p><a href="{{ url_for('user_bp.edit_profile') }}">Edit profile</a></p>
     {% else %}
       
       {% if current_user.is_following(user) %}
-        <form action="{{url_for('unfollow', username=user.username)}}" method="post" novalidate>
+        <form action="{{url_for('user_bp.unfollow', username=user.username)}}" method="post" novalidate>
           {{ form.hidden_tag() }}
           {{ form.submit(value='Unfollow') }}
         </form>
       {% else %}
-        <form action="{{url_for('follow', username=user.username)}}" method="post" novalidate>
+        <form action="{{url_for('user_bp.follow', username=user.username)}}" method="post" novalidate>
           {{ form.hidden_tag() }}
           {{ form.submit(value='Follow') }}
         </form>
@@ -38,7 +38,7 @@
 </table>
 <hr>
 {% for goal in goals %}
-    {% include '_goal.html' %} <br>
+    {% include 'main/_goal.html' %} <br>
 {% endfor %}
  
 

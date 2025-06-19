@@ -1,4 +1,5 @@
-from app import app 
+from app import app
+# from app import create_app 
 import sqlalchemy.orm as so
 import sqlalchemy as sa
 from app import db

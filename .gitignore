@@ -6,3 +6,4 @@ notes.txt
 migrations
 *.db
 *.log
+*.log.*
