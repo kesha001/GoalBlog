@@ -13,34 +13,35 @@ class Config(object):
     MAIL_PORT = os.environ.get("MAIL_PORT")
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
     # MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL") #even if ssl = false it causes error
+    ADMINS = ['berdstudy@gmail.com']
 
 
-    LOGGER_CONFIG = {
-        'version': 1,
-        'formatters': {''
-            'default': {
-                'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-            }
-        },
-        'handlers': {
-            'wsgi': {
-                'class': 'logging.StreamHandler',
-                'stream': 'ext://flask.logging.wsgi_errors_stream',
-                'formatter': 'default'
-            },
-            'file': {
-                'class': 'logging.handlers.TimedRotatingFileHandler',
-                'filename': 'logs/goalblog.log',
-                'when': 'D',
-                'interval': 1,
-                'formatter': 'default'
-            }
+    # LOGGER_CONFIG = {
+    #     'version': 1,
+    #     'formatters': {''
+    #         'default': {
+    #             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    #         }
+    #     },
+    #     'handlers': {
+    #         'wsgi': {
+    #             'class': 'logging.StreamHandler',
+    #             'stream': 'ext://flask.logging.wsgi_errors_stream',
+    #             'formatter': 'default'
+    #         },
+    #         'file': {
+    #             'class': 'logging.handlers.TimedRotatingFileHandler',
+    #             'filename': 'logs/goalblog.log',
+    #             'when': 'D',
+    #             'interval': 1,
+    #             'formatter': 'default'
+    #         }
 
-        },
-        'loggers': {    
-            'file_logger': {
-                'level': 'INFO',
-                'handlers': ['file']
-            }
-        }
-    }
+    #     },
+    #     'loggers': {    
+    #         'file_logger': {
+    #             'level': 'INFO',
+    #             'handlers': ['file']
+    #         }
+    #     }
+    # }

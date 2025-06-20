@@ -4,7 +4,7 @@ from app.main.forms import GoalForm
 from flask import url_for, render_template, redirect, flash, request, abort
 from flask_login import login_required, current_user
 from app.models import Goal
-from app import db, file_logger
+from app import db
 import sqlalchemy as sa
 
 
@@ -42,21 +42,21 @@ def explore():
 
 
 # TODO: replace it with addit logger to app.logger
-@main_bp.after_request
-def logging_requests(response):
+# @main_bp.after_request
+# def logging_requests(response):
 
-    response_status = response.status_code
-    response_data = (request.remote_addr,
-                            request.method, 
-                            request.scheme, 
-                            request.full_path,
-                            response.status)
+#     response_status = response.status_code
+#     response_data = (request.remote_addr,
+#                             request.method, 
+#                             request.scheme, 
+#                             request.full_path,
+#                             response.status)
      
-    if 500 <= response_status <= 599: 
-        file_logger.error("{} {} {} {} {} INTERNAL SERVER ERROR".format(*response_data))
-    if 400 <= response_status <= 499: 
-        file_logger.warning("{} {} {} {} {} CLIENT ERROR".format(*response_data))
-    else:
-        file_logger.info("{} {} {} {} {}".format(*response_data))
+#     if 500 <= response_status <= 599: 
+#         file_logger.error("{} {} {} {} {} INTERNAL SERVER ERROR".format(*response_data))
+#     if 400 <= response_status <= 499: 
+#         file_logger.warning("{} {} {} {} {} CLIENT ERROR".format(*response_data))
+#     else:
+#         file_logger.info("{} {} {} {} {}".format(*response_data))
     
-    return response
+#     return response

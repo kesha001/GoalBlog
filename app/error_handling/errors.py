@@ -1,5 +1,4 @@
 from flask import render_template
-from app import file_logger
 from app.utils.mail import send_error_mail
 import traceback
 
@@ -12,9 +11,4 @@ def page_not_found(e):
 
 @error_bp.app_errorhandler(500)
 def internal_server_error(e):
-    tb = traceback.format_exc()
-
-    file_logger.error("TRACEBACK : {}".format(tb))
-    send_error_mail(e,tb)
-
     return render_template('error_handling/500.html'), 500
