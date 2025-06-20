@@ -1,5 +1,5 @@
 from flask import Flask
-from config import Config
+from config import config_mapping
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -24,9 +24,11 @@ login_manager = LoginManager()
 mail = Mail()
 
 
-def create_app(testing=False):
+def create_app(config_type='default'):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    # default, testing
+    config_class = config_mapping[config_type]
+    app.config.from_object(config_class)
 
     csrf.init_app(app)
     db.init_app(app)
@@ -78,7 +80,6 @@ def create_app(testing=False):
 
     return app
 
-app = create_app()
 # that is a bad factory , it is for now just to make it work
 
 

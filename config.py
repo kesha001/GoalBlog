@@ -2,7 +2,11 @@ import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-class Config(object):
+class Config:
+    
+    TESTING = False
+    DEBUG = os.environ.get('FLASK_DEBUG') or False
+
     SECRET_KEY = os.environ.get("SECRET_KEY") or 'my_secret_key'
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI") or \
     'sqlite:///' + os.path.join(basedir, 'app.db')
@@ -16,32 +20,14 @@ class Config(object):
     ADMINS = ['berdstudy@gmail.com']
 
 
-    # LOGGER_CONFIG = {
-    #     'version': 1,
-    #     'formatters': {''
-    #         'default': {
-    #             'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-    #         }
-    #     },
-    #     'handlers': {
-    #         'wsgi': {
-    #             'class': 'logging.StreamHandler',
-    #             'stream': 'ext://flask.logging.wsgi_errors_stream',
-    #             'formatter': 'default'
-    #         },
-    #         'file': {
-    #             'class': 'logging.handlers.TimedRotatingFileHandler',
-    #             'filename': 'logs/goalblog.log',
-    #             'when': 'D',
-    #             'interval': 1,
-    #             'formatter': 'default'
-    #         }
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_TEST_DATABASE_URI") or \
+    'sqlite:///' + os.path.join(basedir, 'test.db')
+    WTF_CSRF_ENABLED = False
 
-    #     },
-    #     'loggers': {    
-    #         'file_logger': {
-    #             'level': 'INFO',
-    #             'handlers': ['file']
-    #         }
-    #     }
-    # }
+
+config_mapping = {
+    'default': 'config.Config',
+    'testing': 'config.TestingConfig'
+}
