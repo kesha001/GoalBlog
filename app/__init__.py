@@ -7,14 +7,9 @@ from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
 
 import logging
-from logging.config import dictConfig
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
 import os
-
-
-# dictConfig(Config.LOGGER_CONFIG)
-# file_logger = logging.getLogger('file_logger')
 
 
 csrf = CSRFProtect()
@@ -25,8 +20,11 @@ mail = Mail()
 
 
 def create_app(config_type='default'):
+    """
+    Supported config type parameters:
+    default, testing
+    """
     app = Flask(__name__)
-    # default, testing
     config_class = config_mapping[config_type]
     app.config.from_object(config_class)
 
@@ -79,9 +77,6 @@ def create_app(config_type='default'):
     app.logger.info("App configured!")
 
     return app
-
-# that is a bad factory , it is for now just to make it work
-
 
 
 from app import models

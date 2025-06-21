@@ -52,6 +52,12 @@ class User(db.Model, UserMixin):
         back_populates= "followers",
     )
 
+    def __init__(self, username: str, email: str, password=None):
+        self.username = username
+        self.email = email
+        if password:
+            self.set_password(password)
+
     
     def get_avatar(self, size=80):
         email_bytestring = bytes(self.email, 'utf-8')
