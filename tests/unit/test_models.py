@@ -1,4 +1,4 @@
-from app.models import User
+from app.models import User, Goal
 
 def test_new_user(new_user):
     '''
@@ -35,10 +35,16 @@ def test_new_user_with_delayed_password():
     assert user_dp.password_hash != "111"
 
 
-def test_new_goal():
+def test_new_goal(new_user):
     '''
     GIVEN goal model
     WHEN a new goal is created
     THEN check if  is configured correctly
     '''
-    pass
+    new_goal = Goal(
+        body="test body",
+        author=new_user
+    )
+
+    assert new_goal.body == "test body"
+    assert new_goal.author.id == new_user.id
