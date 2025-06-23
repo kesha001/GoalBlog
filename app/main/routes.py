@@ -32,17 +32,18 @@ def index():
                         per_page=per_page,
                         error_out=False
     )
+    prev_url = url_for('main_bp.index', page=goals.prev_num)\
+                if goals.has_prev else None
+    next_url = url_for('main_bp.index', page=goals.next_num)\
+                if goals.has_next else None
     
-    return render_template('main/index.html', goals=goals, form=form)
+    return render_template('main/index.html', goals=goals, form=form,
+                           prev_url=prev_url, next_url=next_url)
 
 
 @main_bp.route('/explore', methods=['GET'])
 @login_required
 def explore():
-
-    # goals = db.session.scalars(
-    #     sa.select(Goal).order_by(sa.desc(Goal.timestamp))
-    # ).all()
 
     goals_query = sa.select(Goal).order_by(sa.desc(Goal.timestamp))
 
@@ -54,8 +55,13 @@ def explore():
                         error_out=False
     )
 
+    prev_url = url_for('main_bp.explore', page=goals.prev_num)\
+                if goals.has_prev else None
+    next_url = url_for('main_bp.explore', page=goals.next_num)\
+                if goals.has_next else None
 
-    return render_template('main/index.html', goals=goals, is_explore=True)
+    return render_template('main/index.html', goals=goals, is_explore=True,
+                           prev_url=prev_url, next_url=next_url)
 
 
 # @main_bp.after_request

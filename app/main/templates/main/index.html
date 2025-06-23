@@ -31,11 +31,8 @@
     {% include 'main/_goal.html' %} <br>
 {% endfor %}
 
-<!-- Form is only present in index page -->
-{% if form %}
-  {{ render_pagination(pagination=goals, endpoint='main_bp.index') }}
-{% else %}
-  {{ render_pagination(pagination=goals, endpoint='main_bp.explore') }}
-{% endif %}
+
+{{ render_pagination(pagination=goals, prev_url=prev_url, next_url=next_url) }}
+
 
 {% endblock %}

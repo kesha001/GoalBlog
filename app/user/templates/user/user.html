@@ -42,7 +42,7 @@
     {% include 'main/_goal.html' %} <br>
 {% endfor %}
 
-{{ render_pagination(pagination=goals, endpoint='user_bp.user', username=user.username) }}
+{{ render_pagination(pagination=goals, prev_url=prev_url, next_url=next_url) }}
  
 
 

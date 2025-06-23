@@ -16,12 +16,8 @@ def user(username):
     query = sa.select(User).where(User.username == username)
     user = db.one_or_404(query)
 
-    # goals = db.session.scalars(
-    #     user.goals.select()
-    # ).all()
-
     goals_query = user.goals.select()
-    
+
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['GOALS_PER_PAGE']
     goals = db.paginate(goals_query, 
@@ -31,8 +27,14 @@ def user(username):
     )
 
     form = FollowForm()
+
+    prev_url = url_for('user_bp.user', page=goals.prev_num, username=username)\
+                if goals.has_prev else None
+    next_url = url_for('user_bp.user', page=goals.next_num, username=username)\
+                if goals.has_next else None
     
-    return render_template('user/user.html', user=user, goals=goals, form=form)
+    return render_template('user/user.html', user=user, goals=goals, form=form,
+                           prev_url=prev_url, next_url=next_url)
 
 
 @user_bp.route('/follow/<username>', methods=['POST'])
