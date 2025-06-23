@@ -1,5 +1,4 @@
 from app import create_app
-from app.auth.forms import LoginForm
 
 def test_login_page(test_client):
     """

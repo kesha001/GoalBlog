@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_paginationhelpers.html" import render_pagination %}
 
 {% block content %}
 
@@ -40,6 +41,8 @@
 {% for goal in goals %}
     {% include 'main/_goal.html' %} <br>
 {% endfor %}
+
+{{ render_pagination(pagination=goals, endpoint='user_bp.user', username=user.username) }}
  
 
 

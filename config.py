@@ -19,6 +19,8 @@ class Config:
     # MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL") #even if ssl = false it causes error
     ADMINS = ['berdstudy@gmail.com']
 
+    GOALS_PER_PAGE = 5
+
 
 class TestingConfig(Config):
     TESTING = True

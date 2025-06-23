@@ -1,7 +1,7 @@
 from app.main import main_bp
 from app.main.forms import GoalForm
 
-from flask import url_for, render_template, redirect, flash, request, abort
+from flask import url_for, render_template, redirect, flash, request, abort, current_app
 from flask_login import login_required, current_user
 from app.models import Goal
 from app import db
@@ -23,25 +23,41 @@ def index():
 
         return redirect(url_for('main_bp.index'))
 
-    goals = current_user.get_following_posts()
+    goals_query = current_user.get_following_posts()
 
-    followings = current_user.get_following()
-
-    return render_template('main/index.html', goals=goals, form=form, followings=followings)
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['GOALS_PER_PAGE']
+    goals = db.paginate(goals_query, 
+                        page=page,
+                        per_page=per_page,
+                        error_out=False
+    )
+    
+    return render_template('main/index.html', goals=goals, form=form)
 
 
 @main_bp.route('/explore', methods=['GET'])
 @login_required
 def explore():
 
-    goals = db.session.scalars(
-        sa.select(Goal).order_by(sa.desc(Goal.timestamp))
-    ).all()
+    # goals = db.session.scalars(
+    #     sa.select(Goal).order_by(sa.desc(Goal.timestamp))
+    # ).all()
 
-    return render_template('main/index.html', goals=goals)
+    goals_query = sa.select(Goal).order_by(sa.desc(Goal.timestamp))
+
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['GOALS_PER_PAGE']
+    goals = db.paginate(goals_query, 
+                        page=page,
+                        per_page=per_page,
+                        error_out=False
+    )
 
 
-# TODO: replace it with addit logger to app.logger
+    return render_template('main/index.html', goals=goals, is_explore=True)
+
+
 # @main_bp.after_request
 # def logging_requests(response):
 

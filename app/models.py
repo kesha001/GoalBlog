@@ -108,14 +108,20 @@ class User(db.Model, UserMixin):
         sa.select(Goal)
             .join(main_user.goals)
             .where(main_user.id==self.id)
-        ).order_by(sa.desc(Goal.timestamp))
+        )
 
-        goals = db.session.scalars(
-            sa.select(Goal)
-            .from_statement(u)
-        ).all()
+        # goals = db.session.scalars(
+        #     sa.select(Goal)
+        #     .from_statement(u)
+        # ).all()
+        # from_statement is not flexible for further use. does not work with f ex pagination
 
-        return goals
+        union_goal_alias = so.aliased(Goal, u.subquery())
+        goals_query = sa.select(union_goal_alias).order_by(
+            sa.desc(union_goal_alias.timestamp)
+        )
+
+        return goals_query
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

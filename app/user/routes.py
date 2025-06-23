@@ -2,7 +2,7 @@ from app.models import User
 from app import db
 from flask_login import login_required, current_user
 import sqlalchemy as sa
-from flask import url_for, render_template, redirect, flash, request
+from flask import url_for, render_template, redirect, flash, request, current_app
 
 from app.user import user_bp
 from app.user.forms import EditProfileForm, FollowForm
@@ -16,9 +16,19 @@ def user(username):
     query = sa.select(User).where(User.username == username)
     user = db.one_or_404(query)
 
-    goals = db.session.scalars(
-        user.goals.select()
-    ).all()
+    # goals = db.session.scalars(
+    #     user.goals.select()
+    # ).all()
+
+    goals_query = user.goals.select()
+    
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['GOALS_PER_PAGE']
+    goals = db.paginate(goals_query, 
+                        page=page,
+                        per_page=per_page,
+                        error_out=False
+    )
 
     form = FollowForm()
     
