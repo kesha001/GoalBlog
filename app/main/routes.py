@@ -16,6 +16,7 @@ def index():
     if form.validate_on_submit():
         goal = Goal()
         goal.body = form.body.data
+        goal.title = form.title.data
         current_user.goals.add(goal)
         db.session.commit()
 

@@ -163,6 +163,7 @@ class User(db.Model, UserMixin):
 
 class Goal(db.Model):
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(64), default="Title")
     body: so.Mapped[str] = so.mapped_column(sa.String(256))
     user_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
     timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
