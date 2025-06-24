@@ -6,6 +6,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from datetime import datetime, timezone
 from hashlib import sha256
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from flask import current_app
 
 
 
@@ -129,6 +131,29 @@ class User(db.Model, UserMixin):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
     
+    def create_password_reset_token(self):
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt=self.password_hash)
+    
+        return serializer.dumps(self.email)
+    
+    @classmethod
+    def check_password_reset_token(cls, token, user_id):
+        user = db.session.get(User, int(user_id))
+
+        if not user:
+            return None
+        
+        deserializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'], salt=user.password_hash)
+
+        try:
+            email = deserializer.loads(token, max_age=current_app.config['RESET_TOKEN_MAX_AGE'])
+        except(BadSignature, SignatureExpired):
+            return None
+    
+        if email != user.email:
+            return None
+        
+        return user
 
     def __repr__(self):
         return f'User: {self.id} {self.username}'

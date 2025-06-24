@@ -1,7 +1,4 @@
 from flask import render_template
-from app.utils.mail import send_error_mail
-import traceback
-
 from app.error_handling import error_bp
 
 

@@ -8,12 +8,13 @@ def send_message(app_context, msg):
     mail.send(msg)
 
 
-def send_error_mail(e, tb):
+def send_mail_threading(subject, recipient, body=None, html=None):
     msg = Message(
-        subject=e.description,
+        subject=subject,
         sender=current_app.config['MAIL_USERNAME'],
-        recipients=["berdstudy@gmail.com"],
-        body=tb,
+        recipients=[recipient],
+        body=body,
+        html=html
     )
     x = threading.Thread(target=send_message, args=(current_app.app_context(),msg,))
     x.start()

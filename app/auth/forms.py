@@ -35,3 +35,14 @@ class RegisterForm(FlaskForm):
 
         if user:
             raise ValidationError("Please use another email")
+        
+
+class RequestResetPasswordForm(FlaskForm):
+    email = EmailField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Submit')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('New Password', validators=[DataRequired(), EqualTo('confirm')])
+    confirm = PasswordField('Confirm Password', validators=[DataRequired(), 
+                                                            EqualTo('password', message='Passwords must match')])
+    submit = SubmitField('Submit')

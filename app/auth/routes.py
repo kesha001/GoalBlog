@@ -1,8 +1,9 @@
-from app.auth.forms import LoginForm, RegisterForm
+from app.auth.forms import LoginForm, RegisterForm, RequestResetPasswordForm, ResetPasswordForm
 from app.auth import auth_bp
+from app.utils.mail import send_mail_threading
 from app.models import User
 from app import db
-from flask import url_for, render_template, redirect, flash
+from flask import url_for, render_template, redirect, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 import sqlalchemy as sa
 import flask
@@ -59,3 +60,63 @@ def register():
         flash('User registrated!')
         return redirect(url_for('auth_bp.login'))
     return render_template('auth/register.html', form=form)
+
+
+@auth_bp.route('/request_reset_password', methods=['GET', 'POST'])
+def request_reset_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('main_bp.index'))
+    
+    form = RequestResetPasswordForm()
+    if form.validate_on_submit():
+        email = form.data['email']
+        user = db.session.scalar(sa.select(User).where(User.email == email))
+        if user:
+            send_reset_password_url(user)
+        flash("The reset link has been sent to the email")
+        return redirect(url_for('auth_bp.login'))
+
+    return render_template('auth/request_reset_password.html', form=form)
+
+@auth_bp.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('main_bp.index'))
+    token = request.args['token']
+    user_id =  request.args['user_id']
+
+    user = User.check_password_reset_token(token, user_id)
+
+    if not user:
+        flash("Reset password error", category='error')
+        return redirect(url_for('auth_bp.login'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        reset_form = form.data
+        user.set_password(reset_form['password'])
+        db.session.commit()
+
+        flash("Password successfully changed", category='info')
+
+        return redirect(url_for('auth_bp.login'))
+
+    return render_template('auth/reset_password.html', form=form)
+
+
+def send_reset_password_url(user):
+    reset_password_url = url_for(
+        'auth_bp.reset_password',
+        token=user.create_password_reset_token(),
+        user_id=user.id,
+        _external=True
+    )
+
+    email_body_html = render_template("auth/_reset_password_email.html", 
+                                 reset_password_url=reset_password_url)
+
+    send_mail_threading(
+        subject="Test Password Reset",
+        recipient=user.email,
+        html=email_body_html
+    )
