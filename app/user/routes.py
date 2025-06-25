@@ -105,7 +105,7 @@ def edit_profile():
 
         db.session.commit()
 
-        flash('Changes saved!')
+        flash('Changes saved!', category='info')
         return redirect(url_for('user_bp.edit_profile'))
 
     return render_template('user/edit_profile.html', form=form)

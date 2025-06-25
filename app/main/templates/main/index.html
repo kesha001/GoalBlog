@@ -1,35 +1,44 @@
 {% extends "base.html" %}
 {% from "_paginationhelpers.html" import render_pagination %}
 
+
 {% block content %}
 {% if current_user.is_authenticated %}
   Hello {{ current_user.username }}!
 {% endif %}
 
 {% if form %}
-<h3>Create goal:</h3>
-  <form action="" method="post" novalidate>
-    <p>{{ form.hidden_tag() }}
-    {{ form.title.label }} <br>
-    {{ form.title(size=40) }} <br>
-    {% for error in form.title.errors %}
-      <span style="color: red">{{ error }}</span>
-    {% endfor %} </p>
+<div class="">
+  <h3>Create goal:</h3>
+    <form action="" method="post" novalidate>
+      
+      <div class="form-group">
+        {{ form.hidden_tag() }}
+        {{ form.title.label }} <br>
+        {{ form.title(class_="form-control", size=40) }} <br>
+        {% for error in form.title.errors %}
+          <span style="color: red">{{ error }}</span>
+        {% endfor %}
 
-    <p>{{ form.hidden_tag() }}
-    {{ form.body.label }} <br>
-    {{ form.body(cols=50, rows=5) }} <br>
-    {% for error in form.body.errors %}
-      <span style="color: red">{{ error }}</span>
-    {% endfor %} </p>
+        {{ form.hidden_tag() }}
+        {{ form.body.label }} <br>
+        {{ form.body(class_="form-control", cols=50, rows=5) }} <br>
+        {% for error in form.body.errors %}
+          <span style="color: red">{{ error }}</span>
+        {% endfor %}
 
-    {{ form.submit }}
-  </form>
-{% endif %}
+        {{ form.submit(class_="btn btn-primary") }}
+      </div>
+    </form>
+  {% endif %}
+</div>
 
-{% for goal in goals %}
-    {% include 'main/_goal.html' %} <br>
-{% endfor %}
+
+<div class="list-group">
+  {% for goal in goals %}
+      {% include 'main/_goal.html' %} <br>
+  {% endfor %}
+</div>
 
 
 {{ render_pagination(pagination=goals, prev_url=prev_url, next_url=next_url) }}
