@@ -1,28 +1,11 @@
 {% extends "base.html" %}
+{% from "_formhelpers.html" import render_form %}
 
 {% block content %}
 
 <h1>Edit profile</h1>
 
-<form action="" method="post" novalidate>
 
-<p>{{ form.hidden_tag() }}
-    {{ form.username.label }} <br>
-    {{ form.username(size=30) }} <br>
-    {% for error in form.username.errors %}
-      <span style="color: red">{{ error }}</span>
-    {% endfor %} </p>
-
-    <p>{{ form.bio.label }} <br>
-    {{ form.bio(size=300) }} <br>
-    {% for error in form.bio.errors %}
-      <span style="color: red">{{ error }}</span>
-    {% endfor %} </p> 
-
-    
-    {{ form.submit }} 
-
-
-</form>
+{{ render_form(form) }}
 
 {% endblock %}
