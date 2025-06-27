@@ -8,7 +8,7 @@ from app import db
 import sqlalchemy as sa
 
 
-@main_bp.route('/')
+@main_bp.route('/', methods=['GET', 'POST'])
 @main_bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():

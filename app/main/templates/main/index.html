@@ -4,11 +4,9 @@
 
 
 {% block content %}
-{% if current_user.is_authenticated %}
-  Hello {{ current_user.username }}!
-{% endif %}
 
 {% if form %}
+<h2>Hello {{ current_user.username }}!</h2>
 <div class="">
   <h3>Create goal:</h3>
 

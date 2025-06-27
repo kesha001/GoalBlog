@@ -9,6 +9,8 @@ from flask_mail import Mail
 import logging
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
+from flask_moment import Moment
+
 import os
 
 
@@ -17,6 +19,7 @@ db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
+moment = Moment()
 
 
 def create_app(config_type='default'):
@@ -34,6 +37,7 @@ def create_app(config_type='default'):
     login_manager.init_app(app)
     login_manager.login_view = "auth_bp.login"
     mail.init_app(app)
+    moment.init_app(app)
 
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
