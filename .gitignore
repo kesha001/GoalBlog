@@ -7,3 +7,4 @@ migrations
 *.db
 *.log
 *.log.*
+translations

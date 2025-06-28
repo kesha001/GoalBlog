@@ -10,11 +10,11 @@
     <td>
     <h1> {{ user.username }} </h1>
 
-    <p> {{ user.username }}'s followers: {{ user.count_followers() }} </p>
-    <p> {{ user.username }} follows: {{ user.count_following() }}</p>
+    <p> {{_('followers')}}: {{ user.count_followers() }} </p>
+    <p> {{_('follows')}}: {{ user.count_following() }}</p>
     
-    <p>Bio: {{ user.bio if user.bio else "" }}</p>
-    <p>Last seen: {{ moment(user.last_seen).format('ddd, Do MMMM YYYY, k:mm:ss') if user.last_seen else "" }}</p>
+    <p>{{_('Bio')}}: {{ user.bio if user.bio else "" }}</p>
+    <p>{{_('Last seen')}}: {{ moment(user.last_seen).format('ddd, Do MMMM YYYY, k:mm:ss') if user.last_seen else "" }}</p>
     
     {% if current_user.id == user.id %}
         <p><a href="{{ url_for('user_bp.edit_profile') }}">Edit profile</a></p>
@@ -23,12 +23,12 @@
       {% if current_user.is_following(user) %}
         <form action="{{url_for('user_bp.unfollow', username=user.username)}}" method="post" novalidate>
           {{ form.hidden_tag() }}
-          {{ form.submit(value='Unfollow') }}
+          {{ form.submit(value=_('Unfollow')) }}
         </form>
       {% else %}
         <form action="{{url_for('user_bp.follow', username=user.username)}}" method="post" novalidate>
           {{ form.hidden_tag() }}
-          {{ form.submit(value='Follow') }}
+          {{ form.submit(value=_('Follow')) }}
         </form>
       {% endif %}
       

@@ -23,6 +23,8 @@ class Config:
 
     RESET_TOKEN_MAX_AGE = 3600
 
+    LANGUAGES = ['en', 'no', 'uk']
+
 
 class TestingConfig(Config):
     TESTING = True

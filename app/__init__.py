@@ -1,5 +1,6 @@
 from flask import Flask
-from config import config_mapping
+from flask import request, g, current_app
+from config import config_mapping, Config
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -10,6 +11,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
 from flask_moment import Moment
+from flask_babel import Babel
 
 import os
 
@@ -20,6 +22,15 @@ migrate = Migrate()
 login_manager = LoginManager()
 mail = Mail()
 moment = Moment()
+babel = Babel()
+
+def get_locale():
+    translations = Config.LANGUAGES
+
+    result = request.accept_languages.best_match(translations)
+    # print(result)
+
+    return result
 
 
 def create_app(config_type='default'):
@@ -38,6 +49,8 @@ def create_app(config_type='default'):
     login_manager.login_view = "auth_bp.login"
     mail.init_app(app)
     moment.init_app(app)
+    babel.init_app(app, locale_selector=get_locale)
+    # print("BABEL_TRANSLATION_DIRECTORIES -- ", app.config['BABEL_TRANSLATION_DIRECTORIES'])
 
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')

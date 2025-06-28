@@ -9,6 +9,8 @@ from app.user.forms import EditProfileForm, FollowForm
 
 from datetime import datetime, timezone
 
+from flask_babel import _
+
 
 @user_bp.route('/user/<username>', methods=['GET'])
 @login_required
@@ -47,15 +49,18 @@ def follow(username):
         query = sa.select(User).where(User.username == username)
         user = db.session.scalar(query)
         if not user:
-            flash(f'{user.username} not found')
+            # flash(f'{user.username} not found')
+            flash(_('%(username)s not found',  username=user.username))
             return redirect(url_for('main_bp.index'))
         elif current_user.id == user.id:
-            flash(f'{user.username}, can not follow yourself')
+            # flash(f'{user.username}, can not follow yourself')
+            flash(_('%(username)s, can not follow yourself', username=user.username))
             return redirect(url_for('user_bp.user', username=username))
         else:
             current_user.follow(user)
             db.session.commit()
-            flash(f'{user.username} has been followed')
+            # flash(f'{user.username} has been followed')
+            flash(_('%(username)s has been followed', username=user.username))
             return redirect(url_for('user_bp.user', username=username))
             
     return redirect(url_for('main_bp.index'))
@@ -72,15 +77,18 @@ def unfollow(username):
         query = sa.select(User).where(User.username == username)
         user = db.session.scalar(query)
         if not user:
-            flash(f'{user.username} not found')
+            # flash(f'{user.username} not found')
+            flash(_('%(username)s not found', username=user.username))
             return redirect(url_for('main_bp.index'))
         elif current_user.id == user.id:
-            flash(f'{user.username}, can not unfollow yourself')
+            # flash(f'{user.username}, can not unfollow yourself')
+            flash(_('%(username)s, can not follow yourself', username=user.username))
             return redirect(url_for('user_bp.user', username=username))
         else:
             current_user.unfollow(user)
             db.session.commit()
-            flash(f'{user.username} has been unfollowed')
+            # flash(f'{user.username} has been unfollowed')
+            flash(_('%(username)s has been unfollowed', username=user.username))
             return redirect(url_for('user_bp.user', username=username))
             
     return redirect(url_for('main_bp.index'))
@@ -105,7 +113,7 @@ def edit_profile():
 
         db.session.commit()
 
-        flash('Changes saved!', category='info')
+        flash(_('Changes saved!'), category='info')
         return redirect(url_for('user_bp.edit_profile'))
 
     return render_template('user/edit_profile.html', form=form)

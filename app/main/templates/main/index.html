@@ -6,9 +6,9 @@
 {% block content %}
 
 {% if form %}
-<h2>Hello {{ current_user.username }}!</h2>
+<h2>{{ _('Hello') }} {{ current_user.username }}!</h2>
 <div class="">
-  <h3>Create goal:</h3>
+  <h3>{{_('Create goal')}}:</h3>
 
     {{ render_form(form) }}
   {% endif %}

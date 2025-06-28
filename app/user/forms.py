@@ -5,10 +5,12 @@ from app import db
 from app.models import User
 import sqlalchemy as sa
 
+from flask_babel import lazy_gettext as l_
+
 class EditProfileForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    bio = TextAreaField('Bio')
-    submit = SubmitField('Submit')
+    username = StringField(l_('Username'), validators=[DataRequired()])
+    bio = TextAreaField(l_('Bio'))
+    submit = SubmitField(l_('Submit'))
 
     def __init__(self, original_username, *args, **kwargs):
         
@@ -22,7 +24,7 @@ class EditProfileForm(FlaskForm):
             user = db.session.scalars(query).one_or_none()
 
             if user:
-                raise ValidationError("Please use another username")
+                raise ValidationError(l_("Please use another username"))
             
 
 class FollowForm(FlaskForm):

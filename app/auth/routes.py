@@ -9,6 +9,8 @@ import sqlalchemy as sa
 import flask
 from urllib.parse import urlparse
 
+from flask_babel import _
+
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -21,7 +23,7 @@ def login():
         user = db.session.scalars(query).one_or_none()
 
         if not user or not user.check_password(form.password.data):
-            flash('Wrong username or password')
+            flash(_('Wrong username or password'))
             return redirect(url_for('auth_bp.login'))
         
         login_user(user, remember=form.remember_me.data)
@@ -32,7 +34,7 @@ def login():
         if next_url_parced.scheme or next_url_parced.netloc:
             return flask.abort(400)
 
-        flash('Succesfully logged in!')
+        flash(_('Succesfully logged in!'))
         return redirect(next_url or url_for('main_bp.index'))
     return render_template('auth/login.html', form=form)
 
@@ -57,7 +59,7 @@ def register():
         db.session.add(user)
         db.session.commit()
 
-        flash('User registrated!')
+        flash(_('User registrated!'))
         return redirect(url_for('auth_bp.login'))
     return render_template('auth/register.html', form=form)
 
@@ -73,7 +75,7 @@ def request_reset_password():
         user = db.session.scalar(sa.select(User).where(User.email == email))
         if user:
             send_reset_password_url(user)
-        flash("The reset link has been sent to the email")
+        flash(_("The reset link has been sent to the email"))
         return redirect(url_for('auth_bp.login'))
 
     return render_template('auth/request_reset_password.html', form=form)
@@ -88,7 +90,7 @@ def reset_password():
     user = User.check_password_reset_token(token, user_id)
 
     if not user:
-        flash("Reset password error", category='error')
+        flash(_("Reset password error"), category='error')
         return redirect(url_for('auth_bp.login'))
 
     form = ResetPasswordForm()
@@ -97,7 +99,7 @@ def reset_password():
         user.set_password(reset_form['password'])
         db.session.commit()
 
-        flash("Password successfully changed", category='info')
+        flash(_("Password successfully changed"), category='info')
 
         return redirect(url_for('auth_bp.login'))
 

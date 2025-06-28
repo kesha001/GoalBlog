@@ -7,6 +7,8 @@ from app.models import Goal
 from app import db
 import sqlalchemy as sa
 
+from flask_babel import _
+
 
 @main_bp.route('/', methods=['GET', 'POST'])
 @main_bp.route('/index', methods=['GET', 'POST'])
@@ -20,7 +22,8 @@ def index():
         current_user.goals.add(goal)
         db.session.commit()
 
-        flash(f"Postet  {form.title.data}")
+        # flash(f"Posted  {form.title.data}")
+        flash(_("Posted %(title)s", title=form.title.data))
 
         return redirect(url_for('main_bp.index'))
 

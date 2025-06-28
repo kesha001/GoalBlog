@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 
-    <title>Page Not Found</title>
+    <title>{{_('Page Not Found')}}</title>
 
 
-  <h1>Page Not Found</h1>
-  <p>What you were looking for is just not there.
-  <p><a href="{{ url_for('main_bp.index') }}">go somewhere nice</a>
+  <h1>{{_('Page Not Found')}}</h1>
+  <p>{{_('What you were looking for is just not there')}}.
+  <p><a href="{{ url_for('main_bp.index') }}">{{_('go somewhere nice')}}</a>
 {% endblock %}
