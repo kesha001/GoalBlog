@@ -1,13 +1,24 @@
 from app.main import main_bp
 from app.main.forms import GoalForm
 
-from flask import url_for, render_template, redirect, flash, request, abort, current_app
+from flask import url_for, render_template, redirect, flash, request, abort, current_app, jsonify
 from flask_login import login_required, current_user
 from app.models import Goal
 from app import db
 import sqlalchemy as sa
 
-from flask_babel import _
+from flask_babel import _, get_locale
+import time
+
+@main_bp.route('/translate_dummy', methods=['GET', 'POST'])
+def translate_dummy():
+    if request.method == 'GET':
+        time.sleep(3)
+        return jsonify(translation='return from python server!! GET')
+    else:
+        print(request.data)
+        # print(get_locale())
+        return jsonify(translation='return from python server!! POST')
 
 
 @main_bp.route('/', methods=['GET', 'POST'])

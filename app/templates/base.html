@@ -52,7 +52,57 @@
     </div>
 
     <script>
+        const delay = (durationMs) => {
+            return new Promise(resolve => setTimeout(() => {
+                    console.log("Loaded after 2 seconds");
+                }, durationMs));
+        }
+        async function translateGoal(element, goal_id){
+            //console.log(element);
+            //console.log(goal_id);
+            var csrf_token = "{{ csrf_token() }}";
+            goal_element = document.getElementById("goal-"+goal_id);
+            //console.log(goal_element);
+            goal_title = goal_element.getElementsByTagName("h5")[0];
+            //console.log(goal_title)
+            goal_body = goal_element.getElementsByTagName("p")[0];
+            //console.log(goal_body)
+            let translation = document.createElement("p");
+            translation.innerHTML = "Loading...";
+            element.replaceWith(translation);
 
+            console.log(goal_body.innerText);
+            goal_body_text = goal_body.innerText;
+            //setTimeout(() => {
+            //    translation.innerHTML = "Loaded after 2 seconds";
+            //}, 2000);
+            try{
+               // const response = await fetch('/translate_dummy');
+               const response = await fetch('/translate_dummy', {
+                method: "POST",
+                headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf_token
+                    },
+                body: JSON.stringify({
+                        text_to_translate: goal_body_text,
+                        to_language: navigator.language
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                }
+    
+                const json = await response.json();
+                console.log(json);
+                translation.innerHTML = json["translation"];
+
+            } catch (error){
+                console.log('There was an error', error);
+            }
+
+        }
     </script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
