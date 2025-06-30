@@ -169,3 +169,5 @@ class Goal(db.Model):
     timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
 
     author: so.Mapped['User'] = so.relationship(back_populates='goals')
+
+    language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(32))

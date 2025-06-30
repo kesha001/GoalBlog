@@ -57,36 +57,34 @@
                     console.log("Loaded after 2 seconds");
                 }, durationMs));
         }
-        async function translateGoal(element, goal_id){
-            //console.log(element);
-            //console.log(goal_id);
+        async function translateGoal(element, goal_id, users_lang, detected_lang){
+       
             var csrf_token = "{{ csrf_token() }}";
+
             goal_element = document.getElementById("goal-"+goal_id);
-            //console.log(goal_element);
             goal_title = goal_element.getElementsByTagName("h5")[0];
-            //console.log(goal_title)
             goal_body = goal_element.getElementsByTagName("p")[0];
-            //console.log(goal_body)
+
             let translation = document.createElement("p");
-            translation.innerHTML = "Loading...";
+            translation.innerHTML = '<img src="{{ url_for('static', filename='loading.gif') }}">';
             element.replaceWith(translation);
 
-            console.log(goal_body.innerText);
+            goal_title_text = goal_title.innerText;
             goal_body_text = goal_body.innerText;
-            //setTimeout(() => {
-            //    translation.innerHTML = "Loaded after 2 seconds";
-            //}, 2000);
+            //goal_texts = [goal_title_text, goal_body_text]
+
             try{
-               // const response = await fetch('/translate_dummy');
-               const response = await fetch('/translate_dummy', {
+               const response = await fetch('/translate_goal', {
                 method: "POST",
                 headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrf_token
+                        'X-CSRF-TOKEN': csrf_token      // because we have CSRFProtect
                     },
                 body: JSON.stringify({
                         text_to_translate: goal_body_text,
-                        to_language: navigator.language
+                        from_language: detected_lang,
+                        to_language: users_lang,
+                        //texts_to_translate: goal_texts,
                     })
                 });
 
@@ -95,8 +93,12 @@
                 }
     
                 const json = await response.json();
-                console.log(json);
-                translation.innerHTML = json["translation"];
+                translation_to_put = json["translation"]
+
+                //translations.forEach((text) => {
+                //    translation_to_put += text + "<br>";
+                //})
+                translation.innerText = translation_to_put          
 
             } catch (error){
                 console.log('There was an error', error);

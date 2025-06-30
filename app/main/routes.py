@@ -1,24 +1,51 @@
 from app.main import main_bp
 from app.main.forms import GoalForm
 
-from flask import url_for, render_template, redirect, flash, request, abort, current_app, jsonify
+from flask import url_for, render_template, redirect, flash, request, abort, current_app, jsonify, g
 from flask_login import login_required, current_user
 from app.models import Goal
 from app import db
 import sqlalchemy as sa
 
 from flask_babel import _, get_locale
-import time
+from app.utils.translate import detect_language, translate_text
 
-@main_bp.route('/translate_dummy', methods=['GET', 'POST'])
-def translate_dummy():
-    if request.method == 'GET':
-        time.sleep(3)
-        return jsonify(translation='return from python server!! GET')
-    else:
-        print(request.data)
-        # print(get_locale())
-        return jsonify(translation='return from python server!! POST')
+
+@main_bp.route('/translate_goal', methods=['POST'])
+def translate_goal():
+    request_data = request.get_json()
+    text = request_data['text_to_translate']
+    users_lang = request_data['to_language']
+    detected_language = request_data['from_language']
+
+    try:
+        translation = translate_text(text=text, 
+                                from_lang=detected_language,
+                                to_lang=users_lang)
+    except Exception as e:
+        return jsonify(translation='Error while translating occured',
+                    detected_language=None,
+                    error=e)
+   
+    return jsonify(translation=translation,
+                       detected_language=detected_language)
+
+
+
+#  texts_to_translate = request_data['texts_to_translate']
+# translations = []
+
+# detected_language = detect_language(texts_to_translate)
+
+# for text in texts_to_translate:
+#     try:
+#         translation = translate_text(text=text, 
+#                                     from_lang=detected_language,
+#                                     to_lang=users_lang)
+#         translations.append(translation)
+#     except Exception as e:
+#         translations.append('Error while translating occured')
+
 
 
 @main_bp.route('/', methods=['GET', 'POST'])
@@ -30,6 +57,7 @@ def index():
         goal = Goal()
         goal.body = form.body.data
         goal.title = form.title.data
+        goal.language = detect_language([goal.title, goal.body])
         current_user.goals.add(goal)
         db.session.commit()
 
@@ -78,6 +106,12 @@ def explore():
     return render_template('main/index.html', goals=goals, is_explore=True,
                            prev_url=prev_url, next_url=next_url)
 
+
+@main_bp.before_request
+def get_users_locale():
+    users_locale = get_locale()
+    g.users_locale = str(users_locale)
+    
 
 # @main_bp.after_request
 # def logging_requests(response):
