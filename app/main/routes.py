@@ -9,9 +9,11 @@ import sqlalchemy as sa
 
 from flask_babel import _, get_locale
 from app.utils.translate import detect_language, translate_text
+from app.utils.search import get_ES_client, ES_search
 
 
 @main_bp.route('/translate_goal', methods=['POST'])
+@login_required
 def translate_goal():
     request_data = request.get_json()
     text = request_data['text_to_translate']
@@ -29,7 +31,6 @@ def translate_goal():
    
     return jsonify(translation=translation,
                        detected_language=detected_language)
-
 
 
 #  texts_to_translate = request_data['texts_to_translate']
@@ -61,6 +62,9 @@ def index():
         current_user.goals.add(goal)
         db.session.commit()
 
+        es_response = add_goal_ES(goal)
+        print(es_response)
+
         # flash(f"Posted  {form.title.data}")
         flash(_("Posted %(title)s", title=form.title.data))
 
@@ -83,6 +87,59 @@ def index():
     return render_template('main/index.html', goals=goals, form=form,
                            prev_url=prev_url, next_url=next_url)
 
+
+@main_bp.route('/search', methods=['GET'])
+@login_required
+def search_goals():
+
+    text_to_search = request.args['search']
+
+    es_client = get_ES_client()
+    if not es_client:
+        return None
+    
+    index_name = 'goals'
+    index_exists = es_client.indices.exists(index=index_name)
+
+    if index_exists:
+        response = ES_search(es_client, index_name, text_to_search, ['Title', 'Body'])
+        print(response)
+        
+        return redirect(url_for('main_bp.index'))
+
+    return "response"
+
+
+def add_goal_ES(goal):
+    es_client = get_ES_client()
+    if not es_client:
+        return None
+
+    index_name = 'goals'
+    index_exists = es_client.indices.exists(index=index_name)
+
+    if not index_exists:
+        settings = {}
+        mappings = {
+            "properties" : {
+                "Title": {
+                    "type": "text",
+                },
+                "Body": {
+                    "type": "text",
+                }
+            }
+        }
+        es_client.indices.create(index=index_name, settings=settings, mappings=mappings)
+    
+    goal_data = {
+        "Title": "{}".format(goal.title),
+        "Body": "{}".format(goal.body),
+    }
+
+    response = es_client.index(index = index_name, id = goal.id, document = goal_data)
+
+    return response
 
 @main_bp.route('/explore', methods=['GET'])
 @login_required

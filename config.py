@@ -25,6 +25,8 @@ class Config:
 
     LANGUAGES = ['en', 'no', 'uk']
 
+    ELASTIC_SEARCH_URI = ['http://localhost:9200']
+
 
 class TestingConfig(Config):
     TESTING = True
