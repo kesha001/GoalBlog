@@ -7,7 +7,9 @@ from flask_login import UserMixin
 from datetime import datetime, timezone
 from hashlib import sha256
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
-from flask import current_app
+from flask import current_app, g
+
+from app.utils.search import add_to_index, delete_from_index
 
 
 
@@ -159,9 +161,52 @@ class User(db.Model, UserMixin):
         return f'User: {self.id} {self.username}'
 
 
+class Base(so.DeclarativeBase):
+    pass
 
 
-class Goal(db.Model):
+class SearchableMixin:
+
+    @classmethod
+    def cache_sess_info(cls, session):
+        db_sess_info = {}
+        db_sess_info['new'] = list(session.new)
+        db_sess_info['dirty'] = list(session.dirty)
+        db_sess_info['deleted'] = list(session.deleted)
+
+        session.info = db_sess_info
+
+
+    @classmethod
+    def insert_ES_after_commit(cls, session):
+        db_sess_info = session.info
+
+        print(db_sess_info, "after commit")
+        print(db_sess_info['new'][0].body)
+
+        for object in db_sess_info['new']:
+            add_to_index(object, getattr(object, "__tablename__"))
+        for object in db_sess_info['dirty']:
+            add_to_index(object, getattr(object, "__tablename__"))
+        for object in db_sess_info['deleted']:
+            delete_from_index(object, getattr(object, "__tablename__"))
+
+        session.info = {}
+
+
+
+    @classmethod
+    def register_event_before_commit(cls):
+        sa.event.listen(db.session, 'before_commit', cls.cache_sess_info)
+
+    @classmethod
+    def register_event_after_commit(cls):
+        sa.event.listen(db.session, 'after_commit', cls.insert_ES_after_commit)
+
+
+class Goal(SearchableMixin, db.Model):
+    __searchable__ = ['title', 'body']
+
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
     title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(64), default="Title")
     body: so.Mapped[str] = so.mapped_column(sa.String(256))
@@ -171,3 +216,7 @@ class Goal(db.Model):
     author: so.Mapped['User'] = so.relationship(back_populates='goals')
 
     language: so.Mapped[Optional[str]] = so.mapped_column(sa.String(32))
+
+
+Goal.register_event_before_commit()
+Goal.register_event_after_commit()

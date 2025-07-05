@@ -1,4 +1,4 @@
-from app.models import User
+from app.models import User, Goal
 from app import db
 from flask_login import login_required, current_user
 import sqlalchemy as sa
@@ -18,7 +18,7 @@ def user(username):
     query = sa.select(User).where(User.username == username)
     user = db.one_or_404(query)
 
-    goals_query = user.goals.select()
+    goals_query = user.goals.select().order_by(sa.desc(Goal.timestamp))
 
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['GOALS_PER_PAGE']

@@ -9,7 +9,7 @@ import sqlalchemy as sa
 
 from flask_babel import _, get_locale
 from app.utils.translate import detect_language, translate_text
-from app.utils.search import get_ES_client, ES_search
+from app.utils.search import ES_search
 
 
 @main_bp.route('/translate_goal', methods=['POST'])
@@ -59,11 +59,13 @@ def index():
         goal.body = form.body.data
         goal.title = form.title.data
         goal.language = detect_language([goal.title, goal.body])
-        current_user.goals.add(goal)
+        # current_user.goals.add(goal)
+        goal.author = current_user
+        db.session.add(goal)
         db.session.commit()
 
-        es_response = add_goal_ES(goal)
-        print(es_response)
+        # es_response = add_goal_ES(goal)
+        # print(es_response)
 
         # flash(f"Posted  {form.title.data}")
         flash(_("Posted %(title)s", title=form.title.data))
@@ -94,24 +96,21 @@ def search_goals():
 
     text_to_search = request.args['search']
 
-    es_client = get_ES_client()
-    if not es_client:
-        return None
+    es_client = current_app.es_client
     
-    index_name = 'goals'
-    index_exists = es_client.indices.exists(index=index_name)
+    if es_client:
+        index_name = 'goals'
+        index_exists = es_client.indices.exists(index=index_name)
 
     if index_exists:
         response = ES_search(es_client, index_name, text_to_search, ['Title', 'Body'])
         print(response)
         
-        return redirect(url_for('main_bp.index'))
-
-    return "response"
+    return redirect(url_for('main_bp.index'))
 
 
 def add_goal_ES(goal):
-    es_client = get_ES_client()
+    es_client = current_app.es_client
     if not es_client:
         return None
 

@@ -13,6 +13,8 @@ from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 from flask_moment import Moment
 from flask_babel import Babel
 
+from elasticsearch import Elasticsearch
+
 import os
 
 
@@ -63,6 +65,11 @@ def create_app(config_type='default'):
 
     from app.main import main_bp
     app.register_blueprint(main_bp)
+
+    client = Elasticsearch(
+        hosts=app.config['ELASTIC_SEARCH_URI']
+    )
+    app.es_client = client if client.ping() else None
 
 
     if not os.path.exists('logs'):

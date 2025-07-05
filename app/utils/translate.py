@@ -14,5 +14,5 @@ def detect_language(text):
         detected_language = detect(text)
     except Exception as e:
         detected_language = None
-        raise e
+
     return detected_language
