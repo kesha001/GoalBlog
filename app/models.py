@@ -172,6 +172,9 @@ class SearchableMixin:
         
         index = getattr(cls, "__tablename__")
         result_idx = search_in_index(index, query)
+
+        if not result_idx:
+            return []
         
         whens = {}
         for i in range(len(result_idx)):
@@ -195,11 +198,8 @@ class SearchableMixin:
 
 
     @classmethod
-    def insert_ES_after_commit(cls, session):
+    def insert_after_commit(cls, session):
         db_sess_info = session.info
-
-        print(db_sess_info, "after commit")
-        print(db_sess_info['new'][0].body)
 
         for object in db_sess_info['new']:
             add_to_index(object, getattr(object, "__tablename__"))
@@ -224,7 +224,7 @@ class SearchableMixin:
 
     @classmethod
     def register_event_after_commit(cls):
-        sa.event.listen(db.session, 'after_commit', cls.insert_ES_after_commit)
+        sa.event.listen(db.session, 'after_commit', cls.insert_after_commit)
 
 
 class Goal(SearchableMixin, db.Model):

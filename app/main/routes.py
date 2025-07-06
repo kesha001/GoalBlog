@@ -1,5 +1,5 @@
 from app.main import main_bp
-from app.main.forms import GoalForm
+from app.main.forms import GoalForm, SearchForm
 
 from flask import url_for, render_template, redirect, flash, request, abort, current_app, jsonify, g
 from flask_login import login_required, current_user
@@ -89,18 +89,22 @@ def index():
 @main_bp.route('/search', methods=['GET'])
 @login_required
 def search_goals():
+    if not g.search_form.validate():
+        # print(g.search_form.q.errors)
+        # print(g.search_form.q.data)
+        return redirect(url_for("main_bp.index"))
+    
+    print(g.search_form.q.data)
 
-    text_to_search = request.args['search']
+    text_to_search = request.args['q']
 
-    es_client = current_app.es_client
-    index_name = 'goal'
-
-
-    Goal.search(text_to_search)
+    goals = Goal.search(text_to_search)
 
     # print([int(hit['_id']) for hit in response['hits']['hits']])
         
-    return redirect(url_for('main_bp.index'))
+    return render_template('main/search_results.html', goals=goals, search_query=text_to_search)
+
+    # return redirect(url_for("main_bp.index"))
 
 
 def add_goal_ES(goal):
@@ -161,6 +165,7 @@ def explore():
 def get_users_locale():
     users_locale = get_locale()
     g.users_locale = str(users_locale)
+    g.search_form = SearchForm()
     
 
 # @main_bp.after_request

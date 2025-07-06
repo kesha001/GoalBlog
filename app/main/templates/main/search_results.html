@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>{{ _('Search results for ') }} "{{ search_query }}"</h3>
+
+<div class="list-group">
+  {% for goal in goals %}
+      {% include 'main/_goal.html' %} <br>
+  {% endfor %}
+</div>
+
+{% endblock %}

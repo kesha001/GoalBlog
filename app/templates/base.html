@@ -1,3 +1,4 @@
+{% from "_formhelpers.html" import render_form %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -32,10 +33,12 @@
                     <a class="nav-link" href="{{ url_for('main_bp.explore') }}">{{_('Explore')}}</a>
                 </li>
             </ul>
-        <form class="form-inline" action="{{url_for('main_bp.search_goals')}}" method="get">
-            <input class="form-control mr-sm-2" name="search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">{{_('Search')}}</button>
-        </form>
+        {% if g.search_form %}
+            <form class="form-inline" action="{{url_for('main_bp.search_goals')}}" method="get">
+                {{ g.search_form.q(class_="form-control mr-sm-2") }}
+                {# {{ g.search_form.submit(class_="btn btn-outline-success my-2 my-sm-0") }} #}
+            </form>
+        {% endif %}
         </div>
         
     </nav>

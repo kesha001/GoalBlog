@@ -34,12 +34,15 @@ def add_to_index(object, index):
     if not es_client:
         return None
     
-    index_data = {}
+    searchable_fields = getattr(object, "__searchable__", [])
 
-    for field in  getattr(object, "__searchable__"):
+    if not searchable_fields:
+        return None
+
+    index_data = {}
+    for field in searchable_fields:
         index_data[field] = getattr(object, field)
     
-    # print(index_data, index)
 
     response = es_client.index(index=index, id=object.id, document = index_data)
 
