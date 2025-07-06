@@ -64,10 +64,6 @@ def index():
         db.session.add(goal)
         db.session.commit()
 
-        # es_response = add_goal_ES(goal)
-        # print(es_response)
-
-        # flash(f"Posted  {form.title.data}")
         flash(_("Posted %(title)s", title=form.title.data))
 
         return redirect(url_for('main_bp.index'))
@@ -97,14 +93,12 @@ def search_goals():
     text_to_search = request.args['search']
 
     es_client = current_app.es_client
-    
-    if es_client:
-        index_name = 'goals'
-        index_exists = es_client.indices.exists(index=index_name)
+    index_name = 'goal'
 
-    if index_exists:
-        response = ES_search(es_client, index_name, text_to_search, ['Title', 'Body'])
-        print(response)
+
+    Goal.search(text_to_search)
+
+    # print([int(hit['_id']) for hit in response['hits']['hits']])
         
     return redirect(url_for('main_bp.index'))
 
@@ -114,7 +108,7 @@ def add_goal_ES(goal):
     if not es_client:
         return None
 
-    index_name = 'goals'
+    index_name = 'goal'
     index_exists = es_client.indices.exists(index=index_name)
 
     if not index_exists:

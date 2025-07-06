@@ -9,7 +9,7 @@ from hashlib import sha256
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask import current_app, g
 
-from app.utils.search import add_to_index, delete_from_index
+from app.utils.search import add_to_index, delete_from_index, search_in_index
 
 
 
@@ -166,6 +166,23 @@ class Base(so.DeclarativeBase):
 
 
 class SearchableMixin:
+    
+    @classmethod
+    def search(cls, query):
+        
+        index = getattr(cls, "__tablename__")
+        result_idx = search_in_index(index, query)
+        
+        whens = {}
+        for i in range(len(result_idx)):
+            whens[result_idx[i]] = i
+        
+        query = sa.select(cls).where(
+                cls.id.in_(result_idx)
+            ).order_by(sa.case(whens, value=cls.id))
+        found_objects = db.session.scalars(query).all()
+        
+        return found_objects
 
     @classmethod
     def cache_sess_info(cls, session):
@@ -193,6 +210,12 @@ class SearchableMixin:
 
         session.info = {}
 
+    
+    @classmethod
+    def reindex(cls):
+        all_objects = db.session.scalars(sa.select(cls))
+        for object in all_objects:
+            add_to_index(object, getattr(object, "__tablename__"))
 
 
     @classmethod
