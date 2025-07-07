@@ -168,13 +168,13 @@ class Base(so.DeclarativeBase):
 class SearchableMixin:
     
     @classmethod
-    def search(cls, query):
+    def search(cls, query, per_page, starting_num):
         
         index = getattr(cls, "__tablename__")
-        result_idx = search_in_index(index, query)
+        result_idx, total_hits = search_in_index(index, query, per_page, starting_num)
 
         if not result_idx:
-            return []
+            return [], 0
         
         whens = {}
         for i in range(len(result_idx)):
@@ -185,7 +185,7 @@ class SearchableMixin:
             ).order_by(sa.case(whens, value=cls.id))
         found_objects = db.session.scalars(query).all()
         
-        return found_objects
+        return found_objects, total_hits
 
     @classmethod
     def cache_sess_info(cls, session):

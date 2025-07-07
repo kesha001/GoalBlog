@@ -22,5 +22,5 @@ class SearchForm(FlaskForm):
             kwargs['formdata'] = request.args
         if 'meta' not in kwargs:
             kwargs['meta'] = {'csrf': False}
-        super(SearchForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         

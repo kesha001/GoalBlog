@@ -1,32 +1,25 @@
 from flask import current_app
 
 
-def ES_search(client, index: str, to_search: str):
-    query = {
-        "multi_match" : {
-            "query":    to_search, 
-        }
-    }
-    # query = { "query": { "match_all": {} }, "size": 5000, "from": 0 }
-    # print(query)
-    response = client.search(index=index, query=query)
-
-    return response
-
-def search_in_index(index, query):
+def search_in_index(index, query, per_page, starting_num):
     es_client = current_app.es_client
+    if not es_client:
+        return [], 0
     payload = {
         "multi_match": {
             "query": query,
-
         }
     }
 
-    response = es_client.search(index=index, query=payload)
+    response = es_client.search(index=index, query=payload, 
+                                size=per_page, from_=starting_num)
 
     idx = [int(hit['_id']) for hit in response['hits']['hits']]
+    total_hits = response['hits']['total']['value']
 
-    return idx
+    print(response)
+
+    return idx, total_hits
 
 
 def add_to_index(object, index):

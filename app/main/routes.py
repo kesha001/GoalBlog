@@ -9,7 +9,6 @@ import sqlalchemy as sa
 
 from flask_babel import _, get_locale
 from app.utils.translate import detect_language, translate_text
-from app.utils.search import ES_search
 
 
 @main_bp.route('/translate_goal', methods=['POST'])
@@ -90,53 +89,40 @@ def index():
 @login_required
 def search_goals():
     if not g.search_form.validate():
-        # print(g.search_form.q.errors)
-        # print(g.search_form.q.data)
         return redirect(url_for("main_bp.index"))
-    
-    print(g.search_form.q.data)
 
     text_to_search = request.args['q']
 
-    goals = Goal.search(text_to_search)
-
-    # print([int(hit['_id']) for hit in response['hits']['hits']])
-        
-    return render_template('main/search_results.html', goals=goals, search_query=text_to_search)
-
-    # return redirect(url_for("main_bp.index"))
-
-
-def add_goal_ES(goal):
-    es_client = current_app.es_client
-    if not es_client:
-        return None
-
-    index_name = 'goal'
-    index_exists = es_client.indices.exists(index=index_name)
-
-    if not index_exists:
-        settings = {}
-        mappings = {
-            "properties" : {
-                "Title": {
-                    "type": "text",
-                },
-                "Body": {
-                    "type": "text",
-                }
-            }
-        }
-        es_client.indices.create(index=index_name, settings=settings, mappings=mappings)
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['GOALS_PER_PAGE']
+    starting_num = (page  - 1) * per_page
+    next_page_starting_num = page * per_page #indexing in ES starts with 0
     
-    goal_data = {
-        "Title": "{}".format(goal.title),
-        "Body": "{}".format(goal.body),
-    }
 
-    response = es_client.index(index = index_name, id = goal.id, document = goal_data)
+    try:
+        goals, total_hits = Goal.search(text_to_search, per_page, starting_num)
+    except:
+        flash("Something went wrong", category="error")
+        return redirect(url_for("main_bp.index"))
 
-    return response
+
+    total_pages = total_hits // per_page + (total_hits % per_page > 0) # round UP 
+
+    prev_url = url_for('main_bp.search_goals', page=page-1, q=text_to_search) \
+        if page>1 else None
+    next_url = url_for('main_bp.search_goals', page=page+1, q=text_to_search) \
+        if page+1 <= total_pages else None #
+    
+    print('next url: ', next_url)
+    print('prev_url: ', prev_url)
+    print('current_starting num: ', starting_num)
+    print('total_pages: ', total_pages)
+    print('total_hits: ', total_hits)
+
+    return render_template('main/search_results.html', goals=goals, search_query=text_to_search,
+                           prev_url=prev_url, next_url=next_url, page_num=page, total_pages=total_pages)
+
+
 
 @main_bp.route('/explore', methods=['GET'])
 @login_required
