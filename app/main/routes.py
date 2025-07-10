@@ -101,8 +101,9 @@ def search_goals():
 
     try:
         goals, total_hits = Goal.search(text_to_search, per_page, starting_num)
-    except:
+    except Exception as e:
         flash("Something went wrong", category="error")
+        current_app.logger.error(e)
         return redirect(url_for("main_bp.index"))
 
 
@@ -113,11 +114,11 @@ def search_goals():
     next_url = url_for('main_bp.search_goals', page=page+1, q=text_to_search) \
         if page+1 <= total_pages else None #
     
-    print('next url: ', next_url)
-    print('prev_url: ', prev_url)
-    print('current_starting num: ', starting_num)
-    print('total_pages: ', total_pages)
-    print('total_hits: ', total_hits)
+    # print('next url: ', next_url)
+    # print('prev_url: ', prev_url)
+    # print('current_starting num: ', starting_num)
+    # print('total_pages: ', total_pages)
+    # print('total_hits: ', total_hits)
 
     return render_template('main/search_results.html', goals=goals, search_query=text_to_search,
                            prev_url=prev_url, next_url=next_url, page_num=page, total_pages=total_pages)
@@ -127,7 +128,6 @@ def search_goals():
 @main_bp.route('/explore', methods=['GET'])
 @login_required
 def explore():
-
     goals_query = sa.select(Goal).order_by(sa.desc(Goal.timestamp))
 
     page = request.args.get('page', 1, type=int)

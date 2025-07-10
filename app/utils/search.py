@@ -17,7 +17,7 @@ def search_in_index(index, query, per_page, starting_num):
     idx = [int(hit['_id']) for hit in response['hits']['hits']]
     total_hits = response['hits']['total']['value']
 
-    print(response)
+    # print(response)
 
     return idx, total_hits
 

@@ -52,7 +52,6 @@ def create_app(config_type='default'):
     mail.init_app(app)
     moment.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
-    # print("BABEL_TRANSLATION_DIRECTORIES -- ", app.config['BABEL_TRANSLATION_DIRECTORIES'])
 
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -68,8 +67,11 @@ def create_app(config_type='default'):
 
     client = Elasticsearch(
         hosts=app.config['ELASTIC_SEARCH_URI']
-    )
-    app.es_client = client if client.ping() else None
+    ) if app.config['ELASTIC_SEARCH_URI'] else None
+
+    app.es_client = client
+
+    app.logger.info(f"Elasticsearch client : {client}")
 
 
     if not os.path.exists('logs'):
@@ -84,18 +86,24 @@ def create_app(config_type='default'):
     file_handler.setFormatter(formatter)
     app.logger.addHandler(file_handler)
 
-    if not app.debug:
+    # print("Debug status: ", not int(app.debug))
+    # type(app.debug) == 'str'
+    if not int(app.debug):
+        app.logger.info("Starting configuring smtp")
         secure=()
         mail_handler = SMTPHandler(
             mailhost=(app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
             fromaddr=app.config['MAIL_USERNAME'],
-            toaddrs=['berdstudy@gmail.com'],
+            toaddrs=app.config['ADMINS'],
             subject='Application Error',
             credentials=(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD']),
             secure=secure
         )
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
+
+        app.logger.info("SMTP logging handler configured")
+
 
 
     app.logger.info("App configured!")

@@ -17,7 +17,7 @@ class Config:
     MAIL_PORT = os.environ.get("MAIL_PORT")
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS")
     # MAIL_USE_SSL = os.environ.get("MAIL_USE_SSL") #even if ssl = false it causes error
-    ADMINS = ['berdstudy@gmail.com']
+    ADMINS = os.environ.get("ADMIN_EMAIL")
 
     GOALS_PER_PAGE = 5
 
@@ -25,7 +25,7 @@ class Config:
 
     LANGUAGES = ['en', 'no', 'uk']
 
-    ELASTIC_SEARCH_URI = ['http://localhost:9200']
+    ELASTIC_SEARCH_URI = os.environ.get("ELASTIC_SEARCH_URI")
 
 
 class TestingConfig(Config):

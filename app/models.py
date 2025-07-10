@@ -33,10 +33,10 @@ class User(db.Model, UserMixin):
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
     username: so.Mapped[str] = so.mapped_column(sa.String(50), unique=True)
     email: so.Mapped[str] = so.mapped_column(sa.String(70), unique=True)
-    password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100))
+    password_hash: so.Mapped[Optional[str]] = so.mapped_column(sa.String(300))
 
     last_seen: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
-    bio: so.Mapped[Optional[str]] = so.mapped_column(sa.String(300))
+    bio: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500))
 
     goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
 
