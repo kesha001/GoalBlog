@@ -119,6 +119,15 @@ def edit_profile():
     return render_template('user/edit_profile.html', form=form)
 
 
+@user_bp.route('/user/<username>/mini_profile', methods=['GET'])
+@login_required
+def mini_profile(username):
+    user = db.first_or_404(sa.select(User).where(User.username==username))
+    print(user)
+    form = FollowForm()
+    return render_template('/user/user_mini_profile.html', user=user, form=form)
+
+
 @user_bp.before_request
 def update_last_seen():
     if current_user.is_authenticated:
