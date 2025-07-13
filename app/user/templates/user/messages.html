@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 > {{_("Your messages :")}}</h1>
+{% for message in messages %}
+    
+    <p>{{message.body}} - {{message.author.username}} - {{ 'old' if message.is_read else 'new' }}</p>
+    <p>Sent: {{ message.timestamp }}</p>
+     <br>
+{% endfor %}
+
+{% endblock %}

@@ -27,6 +27,8 @@ user_following = db.Table(
 
 
 
+
+
 class User(db.Model, UserMixin):
     __tablename__ = "user"
 
@@ -55,6 +57,12 @@ class User(db.Model, UserMixin):
         secondaryjoin= lambda: User.id==user_following.c.followed_id,
         back_populates= "followers",
     )
+
+
+    messages_received: so.WriteOnlyMapped['Message'] = so.relationship(back_populates="recipient",
+                                                                       foreign_keys='Message.recipient_id')
+    messages_sent: so.WriteOnlyMapped['Message'] = so.relationship(back_populates="author",
+                                                                       foreign_keys='Message.author_id')
 
     def __init__(self, username: str, email: str, password=None):
         self.username = username
@@ -161,6 +169,24 @@ class User(db.Model, UserMixin):
         return f'User: {self.id} {self.username}'
 
 
+
+class Message(db.Model):
+    id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    body: so.Mapped[str] = so.mapped_column(sa.String(256))
+
+    is_read: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
+
+    author_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
+    recipient_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
+
+    author: so.Mapped['User'] = so.relationship(back_populates='messages_sent', foreign_keys=[author_id])
+    recipient: so.Mapped['User'] = so.relationship(back_populates='messages_received', foreign_keys=[recipient_id])
+
+    def __repr__(self):
+        return f'Message: {self.id} {self.body}'
+
+
 class Base(so.DeclarativeBase):
     pass
 
@@ -243,3 +269,5 @@ class Goal(SearchableMixin, db.Model):
 
 Goal.register_event_before_commit()
 Goal.register_event_after_commit()
+
+

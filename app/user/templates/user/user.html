@@ -18,6 +18,7 @@
     
     {% if current_user.id == user.id %}
         <p><a href="{{ url_for('user_bp.edit_profile') }}">Edit profile</a></p>
+        <p><a href="{{ url_for('user_bp.messages') }}">Incoming messages</a></p>
     {% else %}
       
       {% if current_user.is_following(user) %}
@@ -31,7 +32,7 @@
           {{ form.submit(value=_('Follow')) }}
         </form>
       {% endif %}
-      
+      <p><a href="{{ url_for('user_bp.send_message', username=user.username) }}">Send Message</a></p>
     {% endif %}
     </td>
     <td>

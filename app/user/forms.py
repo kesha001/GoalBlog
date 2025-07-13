@@ -27,5 +27,10 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError(l_("Please use another username"))
             
 
+class MessageForm(FlaskForm):
+    body = TextAreaField(l_("Your message"))
+    submit = SubmitField()
+
+
 class FollowForm(FlaskForm):
     submit = SubmitField()

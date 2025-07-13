@@ -1,11 +1,11 @@
-from app.models import User, Goal
+from app.models import User, Goal, Message
 from app import db
 from flask_login import login_required, current_user
 import sqlalchemy as sa
 from flask import url_for, render_template, redirect, flash, request, current_app
 
 from app.user import user_bp
-from app.user.forms import EditProfileForm, FollowForm
+from app.user.forms import EditProfileForm, FollowForm, MessageForm
 
 from datetime import datetime, timezone
 
@@ -93,8 +93,40 @@ def unfollow(username):
             
     return redirect(url_for('main_bp.index'))
     
+
+@user_bp.route('/send_message/<username>', methods=['GET', 'POST'])
+@login_required
+def send_message(username):
+    form = MessageForm()
+
+    recipient = db.session.scalar(
+                sa.select(User).where(User.username == username))
     
+    if form.validate_on_submit():
+        message = Message()
+        message.author = current_user
+        message.recipient = recipient
+        message.body = form.body.data
+
+        db.session.add(message)
+        db.session.commit()
+
+        flash(_("Message sent"))
+
+        return redirect(url_for('user_bp.user', username=recipient.username))
+
+    return render_template("user/send_message.html", form=form, recipient=recipient)    
     
+
+@user_bp.route('/user/messages', methods=['GET'])
+@login_required
+def messages():
+    messages_query = current_user.messages_received.select()
+    incoming_messages = db.session.scalars(messages_query)
+
+    return render_template("user/messages.html", messages=incoming_messages)
+
+
 
 @user_bp.route('/user/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -123,7 +155,6 @@ def edit_profile():
 @login_required
 def mini_profile(username):
     user = db.first_or_404(sa.select(User).where(User.username==username))
-    print(user)
     form = FollowForm()
     return render_template('/user/user_mini_profile.html', user=user, form=form)
 

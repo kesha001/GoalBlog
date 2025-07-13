@@ -116,7 +116,6 @@
       })
     }
     async function SetPopoverContent(username) {
-        console.log(username)
         var popup_URI = "{{ url_for('user_bp.mini_profile', username='username_var') }}".replace('username_var',username)
       
         try {
