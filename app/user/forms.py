@@ -28,7 +28,7 @@ class EditProfileForm(FlaskForm):
             
 
 class MessageForm(FlaskForm):
-    body = TextAreaField(l_("Your message"))
+    body = TextAreaField(l_("Your message"), validators=[DataRequired()])
     submit = SubmitField()
 
 

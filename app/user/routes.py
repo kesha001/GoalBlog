@@ -121,10 +121,28 @@ def send_message(username):
 @user_bp.route('/user/messages', methods=['GET'])
 @login_required
 def messages():
-    messages_query = current_user.messages_received.select()
-    incoming_messages = db.session.scalars(messages_query)
+    messages_query = current_user.messages_received.select().order_by(sa.desc(Message.timestamp))
+    # incoming_messages = db.session.scalars(messages_query)
+    current_user.last_read_messages = datetime.now(timezone.utc)
+    db.session.commit()
 
-    return render_template("user/messages.html", messages=incoming_messages)
+    page = request.args.get('page', 1, type=int)
+    per_page = current_app.config['GOALS_PER_PAGE']
+    incoming_messages = db.paginate(messages_query, 
+                        page=page,
+                        per_page=per_page,
+                        error_out=False
+    )
+
+    form = FollowForm()
+
+    prev_url = url_for('user_bp.messages', page=incoming_messages.prev_num)\
+                if incoming_messages.has_prev else None
+    next_url = url_for('user_bp.messages', page=incoming_messages.next_num)\
+                if incoming_messages.has_next else None
+
+    return render_template("user/messages.html", messages=incoming_messages,
+                           prev_url=prev_url, next_url=next_url)
 
 
 

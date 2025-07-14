@@ -1,0 +1,19 @@
+<div class="list-group-item list-group-item-action">
+  <div class="row">
+    <div class="col-1" >
+      <div class="text-center">
+        <a href="{{ url_for('user_bp.user', username=message.author.username)}}"  >
+          <img class="img-fluid" src="{{ message.author.get_avatar(size=75) }}">
+        </a>
+      </div>
+      <p class="text-wrap text-center" style="word-wrap: break-word;" > 
+        <a class="user_popup" href="{{ url_for('user_bp.user', username=message.author.username)}}">
+        {{ message.author.username }}</a> 
+      </p>
+    </div>
+    <div class="col" style="word-wrap: break-word;">
+        <p class="mb-1" name="goal-body">{{ message.body }} </p>
+        <small>{{ moment(message.timestamp).format('ddd, Do MMMM YYYY, k:mm:ss') }}</small>
+    </div>
+  </div>
+</div>

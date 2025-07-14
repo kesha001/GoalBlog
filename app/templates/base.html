@@ -22,6 +22,13 @@
                     <a class="nav-link" href="{{ url_for('user_bp.user', username=current_user.username)}}">{{_('Profile')}}</a>
                 </li>
                 <li class="nav-item active">
+                    <a class="nav-link" href="{{ url_for('user_bp.messages') }}">
+                        {{_('Messages')}} 
+                        {% set unread_messages = current_user.count_unread_messages() %}
+                        <span id="unread-messages-count" class="badge bg-secondary">{{ unread_messages if unread_messages }}</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
                     <a class="nav-link" href="{{ url_for('auth_bp.logout') }}">{{_('Logout')}}</a>
                 </li>
                 {% else %}

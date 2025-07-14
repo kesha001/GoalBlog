@@ -42,6 +42,8 @@ class User(db.Model, UserMixin):
 
     goals: so.WriteOnlyMapped['Goal'] = so.relationship(back_populates='author')
 
+    last_read_messages: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
+
     followers: so.WriteOnlyMapped['User'] = so.relationship(
         "User",
         secondary= user_following,
@@ -70,6 +72,21 @@ class User(db.Model, UserMixin):
         if password:
             self.set_password(password)
 
+    
+    def count_unread_messages(self):
+        
+        last_read_messages_time = datetime(1, 1, 1) \
+            if not self.last_read_messages else self.last_read_messages
+        
+        print(last_read_messages_time)
+
+        query = sa.select(sa.func.count()).select_from(
+            self.messages_received.select()
+            .where(Message.timestamp > last_read_messages_time)
+            .subquery()
+        )
+
+        return db.session.scalar(query)
     
     def get_avatar(self, size=80):
         email_bytestring = bytes(self.email, 'utf-8')

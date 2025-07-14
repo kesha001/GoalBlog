@@ -1,13 +1,16 @@
 {% extends "base.html" %}
+{% from "_paginationhelpers.html" import render_pagination %}
 
 {% block content %}
 
 <h1 > {{_("Your messages :")}}</h1>
+
+<p>your last time checking messages : {{moment(current_user.last_read_messages).format('ddd, Do MMMM YYYY, k:mm:ss') }}</p>
+
 {% for message in messages %}
-    
-    <p>{{message.body}} - {{message.author.username}} - {{ 'old' if message.is_read else 'new' }}</p>
-    <p>Sent: {{ message.timestamp }}</p>
-     <br>
+    {% include 'user/_user_message.html' %} <br>
 {% endfor %}
+
+{{ render_pagination(pagination=messages, prev_url=prev_url, next_url=next_url) }}
 
 {% endblock %}
