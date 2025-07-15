@@ -9,5 +9,6 @@ app = create_app()
 @app.shell_context_processor
 def shell():
     return {
-        "db": db, "sa": sa, "so": so
+        "db": db, "sa": sa, "so": so,
+        
     }

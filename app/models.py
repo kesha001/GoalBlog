@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask import current_app, g
+import json
 
 from app.utils.search import add_to_index, delete_from_index, search_in_index
 
@@ -65,20 +66,31 @@ class User(db.Model, UserMixin):
                                                                        foreign_keys='Message.recipient_id')
     messages_sent: so.WriteOnlyMapped['Message'] = so.relationship(back_populates="author",
                                                                        foreign_keys='Message.author_id')
+    
 
+    notifications: so.WriteOnlyMapped['Notification'] = so.relationship(back_populates='user')
+    
     def __init__(self, username: str, email: str, password=None):
         self.username = username
         self.email = email
         if password:
             self.set_password(password)
 
+    def add_notification(self, notification_name, data):
+        # db.session.delete - marks for deletion, there are problems with it with elasticsearch mixin, I suppose execute exetures it without marking
+        db.session.execute(self.notifications.delete().where(Notification.name == notification_name)) 
+
+        new_notification = Notification(name=notification_name, payload=json.dumps(data))
+        self.notifications.add(new_notification)
+
+        db.session.commit()
+
+
     
     def count_unread_messages(self):
         
         last_read_messages_time = datetime(1, 1, 1) \
             if not self.last_read_messages else self.last_read_messages
-        
-        print(last_read_messages_time)
 
         query = sa.select(sa.func.count()).select_from(
             self.messages_received.select()
@@ -192,7 +204,7 @@ class Message(db.Model):
     body: so.Mapped[str] = so.mapped_column(sa.String(256))
 
     is_read: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
-    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
 
     author_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
     recipient_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
@@ -202,6 +214,23 @@ class Message(db.Model):
 
     def __repr__(self):
         return f'Message: {self.id} {self.body}'
+    
+
+class Notification(db.Model):
+    id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+
+    name: so.Mapped[str] = so.mapped_column(sa.String(128))
+    payload: so.Mapped[str] = so.mapped_column(sa.Text)
+
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
+
+    user_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
+
+    user: so.Mapped['User'] = so.relationship(back_populates='notifications')
+
+    def __repr__(self):
+        return f'Notification: {self.id} {self.payload}'
+    
 
 
 class Base(so.DeclarativeBase):
@@ -277,7 +306,7 @@ class Goal(SearchableMixin, db.Model):
     title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(64), default="Title")
     body: so.Mapped[str] = so.mapped_column(sa.String(256))
     user_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
-    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
 
     author: so.Mapped['User'] = so.relationship(back_populates='goals')
 

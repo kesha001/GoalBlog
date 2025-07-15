@@ -180,7 +180,49 @@
             initialize_popup(popover_elements[i]);
         }  
     })
+
+    async function update_message_counter(){
     
+        notifications_URI = "{{ url_for('user_bp.notifications', since=0.0)}}"
+
+        try {
+            const response = await fetch(notifications_URI);
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+
+            const notifications = await response.json();
+            //console.log(notifications);
+            //let counter_value = json["data"];
+            for (let i=0; i<notifications.length; i++){
+                n = notifications[i];
+                if (n['name'] == 'unread_messages_count') {
+                    let counter = n['payload']
+                    set_unread_messages_counter(counter);
+                }
+            }
+
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    function set_unread_messages_counter(counter_value){
+        counter = document.getElementById("unread-messages-count");
+        if (parseInt(counter_value) > 0){
+            counter.style.visibility = "visible";
+            counter.innerText = counter_value;
+        }
+        else{
+            counter.style.visibility = "hidden";
+        }
+        
+    }
+
+    {% if current_user.is_authenticated %}
+        setInterval(update_message_counter, 10000);
+        document.addEventListener("DOMContentLoaded", update_message_counter);
+    {% endif %}
 
     </script>
     </body>

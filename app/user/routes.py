@@ -1,8 +1,8 @@
-from app.models import User, Goal, Message
+from app.models import User, Goal, Message, Notification
 from app import db
 from flask_login import login_required, current_user
 import sqlalchemy as sa
-from flask import url_for, render_template, redirect, flash, request, current_app
+from flask import url_for, render_template, redirect, flash, request, current_app, jsonify
 
 from app.user import user_bp
 from app.user.forms import EditProfileForm, FollowForm, MessageForm
@@ -111,6 +111,9 @@ def send_message(username):
         db.session.add(message)
         db.session.commit()
 
+        cnt = recipient.count_unread_messages()
+        recipient.add_notification("unread_messages_count", cnt)
+
         flash(_("Message sent"))
 
         return redirect(url_for('user_bp.user', username=recipient.username))
@@ -125,6 +128,8 @@ def messages():
     # incoming_messages = db.session.scalars(messages_query)
     current_user.last_read_messages = datetime.now(timezone.utc)
     db.session.commit()
+
+    current_user.add_notification("unread_messages_count", 0)
 
     page = request.args.get('page', 1, type=int)
     per_page = current_app.config['GOALS_PER_PAGE']
@@ -144,6 +149,22 @@ def messages():
     return render_template("user/messages.html", messages=incoming_messages,
                            prev_url=prev_url, next_url=next_url)
 
+@user_bp.route('/user/notifications', methods=['GET'])
+@login_required
+def notifications():
+
+    time_since = request.args.get('since', 0, type=int)
+    notifications_query = current_user.notifications.select().where(
+        Notification.timestamp >= time_since
+    ).order_by(Notification.timestamp)
+
+    user_notifications = db.session.scalars(notifications_query).all()
+
+    return [{
+        'name': n.name,
+        'payload': n.payload,
+        'timestamp': n.timestamp
+    } for n in user_notifications]
 
 
 @user_bp.route('/user/edit_profile', methods=['GET', 'POST'])
