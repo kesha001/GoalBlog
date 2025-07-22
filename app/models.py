@@ -12,6 +12,9 @@ import json
 
 from app.utils.search import add_to_index, delete_from_index, search_in_index
 
+from celery.result import AsyncResult
+from celery import signature
+
 
 
 @login_manager.user_loader
@@ -69,6 +72,8 @@ class User(db.Model, UserMixin):
     
 
     notifications: so.WriteOnlyMapped['Notification'] = so.relationship(back_populates='user')
+
+    tasks: so.WriteOnlyMapped['Task'] = so.relationship(back_populates='user')
     
     def __init__(self, username: str, email: str, password=None):
         self.username = username
@@ -76,9 +81,35 @@ class User(db.Model, UserMixin):
         if password:
             self.set_password(password)
 
+    def start_task(self, task_name, task_description, *args, **kwargs):
+        task_signature = signature(task_name, args=args, kwargs=kwargs)
+        result = task_signature.delay(user_id=self.id)
+
+        task = Task(id=result.id, name=task_name, description=task_description, user_id=self.id)
+
+        db.session.add(task)
+
+        return task
+
+
+    def get_task_in_progress(self, name):
+        task = db.session.scalar(self.tasks.select()
+                                 .where(sa.and_(Task.completed==False, Task.name==name)))
+        
+        return task
+
+    def get_tasks_in_progress(self):
+        tasks = db.session.scalars(self.tasks.select()
+                                   .where(Task.completed==False))
+        
+        return tasks
+
+
     def add_notification(self, notification_name, data):
         # db.session.delete - marks for deletion, there are problems with it with elasticsearch mixin, I suppose execute exetures it without marking
         db.session.execute(self.notifications.delete().where(Notification.name == notification_name)) 
+        # print("BEFORE data in ADD NOTIFICATION")
+        print(data)
 
         new_notification = Notification(name=notification_name, payload=json.dumps(data))
         self.notifications.add(new_notification)
@@ -231,6 +262,30 @@ class Notification(db.Model):
     def __repr__(self):
         return f'Notification: {self.id} {self.payload}'
     
+
+class Task(db.Model):
+    id: so.Mapped[str] = so.mapped_column(sa.String(37), primary_key=True)
+
+    name: so.Mapped[str] = so.mapped_column(sa.String(64))
+    description: so.Mapped[str] = so.mapped_column(sa.String(128))
+
+    timestamp: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now(timezone.utc), index=True)
+
+    completed: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
+
+    user: so.Mapped['User'] = so.relationship(back_populates='tasks')
+    user_id: so.Mapped[int] = so.mapped_column(sa.Integer, sa.ForeignKey(User.id))
+
+    def get_task_progress(self):
+        try:
+            task_result = AsyncResult(self.id)
+            progress = task_result.info.get('progress', 0)
+            return progress
+        except Exception as e:
+            return 100
+        
+
+
 
 
 class Base(so.DeclarativeBase):

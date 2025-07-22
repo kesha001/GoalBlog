@@ -17,8 +17,13 @@
     <p>{{_('Last seen')}}: {{ moment(user.last_seen).format('ddd, Do MMMM YYYY, k:mm:ss') if user.last_seen else "" }}</p>
     
     {% if current_user.id == user.id %}
-        <p><a href="{{ url_for('user_bp.edit_profile') }}">Edit profile</a></p>
-        <p><a href="{{ url_for('user_bp.messages') }}">Incoming messages</a></p>
+        <p><a href="{{ url_for('user_bp.edit_profile') }}">{{_('Edit profile')}}</a></p>
+        <p><a href="{{ url_for('user_bp.messages') }}">{{_('Incoming messages')}}</a></p>
+
+        {% if not current_user.get_task_in_progress("export_goals") %}
+          <p><a href="{{ url_for('user_bp.export_goals') }}">{{_('Export goals')}}</a></p>
+        {% endif %}
+
     {% else %}
       
       {% if current_user.is_following(user) %}

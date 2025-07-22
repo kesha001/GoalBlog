@@ -7,6 +7,7 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
 
+from celery import Celery
 import logging
 from logging.handlers import TimedRotatingFileHandler, SMTPHandler
 
@@ -17,6 +18,8 @@ from elasticsearch import Elasticsearch
 
 import os
 
+from app.celery_utils import celery_init_app
+from config import Config
 
 csrf = CSRFProtect()
 db = SQLAlchemy()
@@ -25,6 +28,11 @@ login_manager = LoginManager()
 mail = Mail()
 moment = Moment()
 babel = Babel()
+# celery_app = Celery(__name__,
+#                         broker=Config.CELERY_BROKER_URI, 
+#                         backend=Config.CELERY_BACKEND_URI,
+#                         include=["app.tasks"]
+#                         )
 
 def get_locale():
     translations = Config.LANGUAGES
@@ -44,6 +52,8 @@ def create_app(config_type='default'):
     config_class = config_mapping[config_type]
     app.config.from_object(config_class)
 
+    # print("config class dict", config_class.__dict__)
+
     csrf.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
@@ -52,6 +62,10 @@ def create_app(config_type='default'):
     mail.init_app(app)
     moment.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
+
+    # celery_app.conf.update(app.config)
+
+    print("app.config in init", app.config['SQLALCHEMY_DATABASE_URI'])
 
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -85,6 +99,9 @@ def create_app(config_type='default'):
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     app.logger.addHandler(file_handler)
+
+    celery_init_app(app)
+    
 
     # print("Debug status: ", not int(app.debug))
     # type(app.debug) == 'str'

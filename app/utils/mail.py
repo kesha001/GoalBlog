@@ -8,14 +8,20 @@ def send_message(app_context, msg):
     mail.send(msg)
 
 
-def send_mail_threading(subject, recipient, body=None, html=None):
+def send_mail_threading(subject, recipient, body=None, html=None, attachments=None, force_sync=False):
     msg = Message(
         subject=subject,
         sender=current_app.config['MAIL_USERNAME'],
         recipients=[recipient],
         body=body,
-        html=html
+        html=html,
     )
-    x = threading.Thread(target=send_message, args=(current_app.app_context(),msg,))
-    x.start()
+    for attachment in attachments:
+        msg.attach(*attachment)
+    
+    if not force_sync:
+        x = threading.Thread(target=send_message, args=(current_app.app_context(),msg,))
+        x.start()
+    else:
+        send_message(current_app.app_context(),msg) 
     return 1

@@ -1,6 +1,10 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
+print("basedir in Config: ", basedir)
 
 class Config:
     
@@ -8,6 +12,7 @@ class Config:
     DEBUG = os.environ.get('FLASK_DEBUG') or False
 
     SECRET_KEY = os.environ.get("SECRET_KEY") or 'my_secret_key'
+    # SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:root@127.0.0.1:3306/goalblogdb"
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI") or \
     'sqlite:///' + os.path.join(basedir, 'app.db')
 
@@ -26,6 +31,10 @@ class Config:
     LANGUAGES = ['en', 'no', 'uk']
 
     ELASTIC_SEARCH_URI = os.environ.get("ELASTIC_SEARCH_URI")
+
+    CELERY_BROKER_URI = "amqp://localhost"
+    # CELERY_BACKEND_URI = "rpc://localhost"
+    CELERY_BACKEND_URI = "redis://localhost"
 
 
 class TestingConfig(Config):

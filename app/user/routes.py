@@ -190,6 +190,18 @@ def edit_profile():
     return render_template('user/edit_profile.html', form=form)
 
 
+@user_bp.route('/user/export_goals', methods=['GET'])
+@login_required
+def export_goals():
+    if current_user.get_task_in_progress("app.tasks.export_goals"):
+        flash(_("You have already exporting in progress"))
+    else:
+        print(current_app.config['SQLALCHEMY_DATABASE_URI'])
+        current_user.start_task(task_name="app.tasks.export_goals", task_description=_("Exporting goals"))
+        db.session.commit()
+    return redirect(url_for("user_bp.user", username=current_user.username))
+
+
 @user_bp.route('/user/<username>/mini_profile', methods=['GET'])
 @login_required
 def mini_profile(username):

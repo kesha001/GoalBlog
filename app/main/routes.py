@@ -10,6 +10,51 @@ import sqlalchemy as sa
 from flask_babel import _, get_locale
 from app.utils.translate import detect_language, translate_text
 
+from app.tasks import add_together
+from celery.result import AsyncResult
+
+import time
+
+
+@main_bp.route('/add', methods=['GET'])
+def start_add() -> dict[str, object]:
+    a = request.args.get("a", type=int)
+    b = request.args.get("b", type=int)
+    print(a, b)
+    result = add_together.delay(a, b)
+    print(add_together.name)
+    # for debug purposes
+    # while True:  
+    #     result = AsyncResult(result.id)
+    #     print(result.status, result.successful(), result.failed())
+    #     if result.successful() or result.failed():
+    #         print(result.successful())
+    #         print({
+    #             "ready": result.ready(),
+    #             "successful": result.successful(),
+    #             "value": result.result if result.ready() else None,
+    #             "failure": result.failed()
+    #         })
+    #         result1 = AsyncResult(result.id)
+    #         print({
+    #             "ready": result1.ready(),
+    #             "successful": result1.successful(),
+    #             "value": result1.result if result.ready() else None,
+    #             "failure": result1.failed()
+    #         })
+    #         break
+    #     time.sleep(1)
+    return {"result_id": result.id}
+
+@main_bp.route('/results/<id>', methods=['GET'])
+def task_result(id: str) -> dict[str, object]:
+    result = AsyncResult(id)
+    print(result.info)
+    return {
+        "ready": result.ready(),
+        "successful": result.successful(),
+        "value": result.result if result.ready() else None,
+    }
 
 @main_bp.route('/translate_goal', methods=['POST'])
 @login_required
