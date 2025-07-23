@@ -17,9 +17,5 @@ def celery_init_app(app) -> Celery:
                         )
     celery_app.conf.update(app.config)
     celery_app.set_default()
-    print(app.app_context())
-    # celery_app.add_defaults(app.config)
     app.extensions["celery"] = celery_app
-
-    print(celery_app.conf['SQLALCHEMY_DATABASE_URI'])
     return celery_app

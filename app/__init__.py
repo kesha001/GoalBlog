@@ -52,8 +52,6 @@ def create_app(config_type='default'):
     config_class = config_mapping[config_type]
     app.config.from_object(config_class)
 
-    # print("config class dict", config_class.__dict__)
-
     csrf.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
@@ -63,9 +61,6 @@ def create_app(config_type='default'):
     moment.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
 
-    # celery_app.conf.update(app.config)
-
-    print("app.config in init", app.config['SQLALCHEMY_DATABASE_URI'])
 
     from app.auth import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')

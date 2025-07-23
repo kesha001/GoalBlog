@@ -62,6 +62,17 @@
         </div>
     {% endif %}
     {% endwith %}
+    {% if current_user.is_authenticated %}
+        {% with tasks = current_user.get_tasks_in_progress() %}
+            {% for task in tasks %}
+                <div class="alert alert-primary" role="alert"> {{task.description}} 
+                
+                <span id="task-{{task.id}}-progress">{{task.get_task_progress()}}</span>
+                
+                </div>
+            {% endfor %}
+        {% endwith %}
+    {% endif %}
     <div class="container-fluid">
     {% block content %} {% endblock %}
     </div>
@@ -200,6 +211,10 @@
                     let counter = n['payload']
                     set_unread_messages_counter(counter);
                 }
+                else if (n['name'] == 'task_progress'){
+                    let progress = JSON.parse(n['payload']);
+                    set_task_progress(progress.task_id, progress.progress);
+                }
             }
 
         } catch (error) {
@@ -220,10 +235,16 @@
     }
 
     {% if current_user.is_authenticated %}
-        setInterval(update_message_counter, 10000);
+        setInterval(update_message_counter, 1000);
         document.addEventListener("DOMContentLoaded", update_message_counter);
     {% endif %}
 
+    function set_task_progress(task_id, progress){
+        task_progress_elem = document.getElementById("task-"+task_id+"-progress");
+        if (task_progress_elem){
+            task_progress_elem.innerText = progress;
+        }
+    }
     </script>
     </body>
 </html>

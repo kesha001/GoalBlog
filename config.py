@@ -32,9 +32,9 @@ class Config:
 
     ELASTIC_SEARCH_URI = os.environ.get("ELASTIC_SEARCH_URI")
 
-    CELERY_BROKER_URI = "amqp://localhost"
+    CELERY_BROKER_URI = os.environ.get("CELERY_BROKER_URI") or "amqp://localhost"
     # CELERY_BACKEND_URI = "rpc://localhost"
-    CELERY_BACKEND_URI = "redis://localhost"
+    CELERY_BACKEND_URI = os.environ.get("CELERY_BACKEND_URI") or "redis://localhost"
 
 
 class TestingConfig(Config):
