@@ -15,6 +15,8 @@ from app.utils.search import add_to_index, delete_from_index, search_in_index
 from celery.result import AsyncResult
 from celery import signature
 
+from flask import url_for
+
 
 
 @login_manager.user_loader
@@ -30,10 +32,34 @@ user_following = db.Table(
 )
 
 
+class PaginateAPIMixin:
+    
+    @staticmethod
+    def collection_to_dict(query, page, per_page, endpoint, **kwargs):
+
+        items = db.paginate(query, page=page, per_page=per_page, error_out=False)
+
+        data = {
+            "items": [item.to_dict() for item in items],
+            "_meta": {
+                "page": page,
+                "per_page": per_page,
+                "total_items": items.total,
+                "total_pages": items.last,
+            },
+            "_links":{
+                "current_page": url_for(endpoint, page=page, per_page=per_page, **kwargs),
+                "next_page": url_for(endpoint, page=items.next_num, per_page=per_page, **kwargs) \
+                    if items.has_next else None,
+                "prev_page": url_for(endpoint, page=items.prev_num, per_page=per_page, **kwargs) \
+                    if items.has_prev else None,
+            }
+        }
+
+        return data
 
 
-
-class User(db.Model, UserMixin):
+class User(PaginateAPIMixin, db.Model, UserMixin):
     __tablename__ = "user"
 
     id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
@@ -80,6 +106,35 @@ class User(db.Model, UserMixin):
         self.email = email
         if password:
             self.set_password(password)
+
+
+    def to_dict(self, include_email=False):
+        user_data = {
+            "id": self.id,
+            "username": self.username,
+            "bio": self.bio,
+            "last_seen": self.last_seen,
+            "number_of_followers": self.count_followers(),
+            "number_of_followings": self.count_following(),
+            "_links": {
+                "followers": url_for('api.get_users_followers', id=self.id),
+                "followings": url_for('api.get_users_followings', id=self.id),
+                "avatar": self.get_avatar(),
+                "current_user": url_for('api.get_user', id=self.id)
+            }
+
+        }
+        if include_email:
+            user_data['email'] = self.email
+        
+        return user_data
+
+    def from_dict(self, user_data, new_user=False):
+        for field, value in user_data.items():
+            if field in ['username', 'bio', 'email']:
+                setattr(self, field, value)
+        if new_user and 'password' in user_data.keys():
+            self.set_password(user_data['password'])
 
     def start_task(self, task_name, task_description, *args, **kwargs):
         task_signature = signature(task_name, args=args, kwargs=kwargs)
@@ -290,6 +345,7 @@ class Task(db.Model):
 
 class Base(so.DeclarativeBase):
     pass
+
 
 
 class SearchableMixin:

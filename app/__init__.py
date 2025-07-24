@@ -74,6 +74,9 @@ def create_app(config_type='default'):
     from app.main import main_bp
     app.register_blueprint(main_bp)
 
+    from app.api import api_bp
+    app.register_blueprint(api_bp, url_prefix='/api')
+
     client = Elasticsearch(
         hosts=app.config['ELASTIC_SEARCH_URI']
     ) if app.config['ELASTIC_SEARCH_URI'] else None
