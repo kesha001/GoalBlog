@@ -77,6 +77,8 @@ def create_app(config_type='default'):
     from app.api import api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
 
+    csrf.exempt(api_bp) # is needed because of CSRFProtect for POST and PUT requests in API
+
     client = Elasticsearch(
         hosts=app.config['ELASTIC_SEARCH_URI']
     ) if app.config['ELASTIC_SEARCH_URI'] else None

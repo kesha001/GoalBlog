@@ -117,10 +117,10 @@ class User(PaginateAPIMixin, db.Model, UserMixin):
             "number_of_followers": self.count_followers(),
             "number_of_followings": self.count_following(),
             "_links": {
-                "followers": url_for('api.get_users_followers', id=self.id),
-                "followings": url_for('api.get_users_followings', id=self.id),
+                "followers": url_for('api_bp.get_users_followers', id=self.id),
+                "followings": url_for('api_bp.get_users_followings', id=self.id),
                 "avatar": self.get_avatar(),
-                "current_user": url_for('api.get_user', id=self.id)
+                "current_user": url_for('api_bp.get_user', id=self.id)
             }
 
         }
