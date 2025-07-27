@@ -15,6 +15,10 @@ docker run --name es01 --net goalblog -p 9200:9200 -it -m 2GB \
 -e discovery.type=single-node -e xpack.security.enabled=false
 
 Running main application:
+
+build: docker build -t goalblog_flask .
+
+
 docker run \
 -e SECRET_KEY={} \
 -e MAIL_PORT=587 \
@@ -29,6 +33,8 @@ docker run \
 -e CELERY_BACKEND_URI=redis://redis:6379 \
 --network goalblog \
 --name goalblog -p 0.0.0.0:8000:5000 --rm goalblog_flask
+
+
 
 Run celery workers container
 docker run \

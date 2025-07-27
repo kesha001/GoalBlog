@@ -10,12 +10,12 @@
 # curl -X GET \
 #     localhost:5000/api/hello
 
-# curl -X GET \
-#     -u "susan:111" \
-#     localhost:5000/api/get_token
+curl -X GET \
+    -u "susan:111" \
+    localhost:8000/api/get_token
 
 
-curl localhost:5000/api/users2 \
+curl localhost:8000/api/users \
    -X GET \
    -H "Accept: application/json" \
    -H "Authorization: Bearer lAYZmBq7dbht8_ZjQHhmEOIZuoy3sQy3l-QC2YFQSBw"
