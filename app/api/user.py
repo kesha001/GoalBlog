@@ -3,13 +3,15 @@ from flask import jsonify, json, request, current_app, url_for
 from app import db
 import sqlalchemy as sa
 from app.models import User
-from app.api.errors import handle_bad_request
+from app.api.errors import handle_bad_request, error_response
+from app.api.auth import user_auth, token_auth
 
 @api_bp.route('/hello')
 def hello():
     return 'Hello world'
 
 @api_bp.route('/users', methods=['GET'])
+@token_auth.login_required
 def get_users():
     query = sa.select(User)
     page = request.args.get("page", 1, type=int)
@@ -17,12 +19,14 @@ def get_users():
     return User.collection_to_dict(query, page=page, per_page=per_page, endpoint='api_bp.get_users')
 
 @api_bp.route('/users/<id>', methods=['GET'])
+@token_auth.login_required
 def get_user(id):
     user = db.get_or_404(User, id)
 
     return user.to_dict()
 
 @api_bp.route('/users/<id>/followings', methods=['GET'])
+@token_auth.login_required
 def get_users_followings(id):
     user = db.get_or_404(User, id)
     page = request.args.get("page", 1, type=int)
@@ -33,6 +37,7 @@ def get_users_followings(id):
 
 
 @api_bp.route('/users/<id>/followers', methods=['GET'])
+@token_auth.login_required
 def get_users_followers(id):
     user = db.get_or_404(User, id)
     page = request.args.get("page", 1, type=int)
@@ -67,7 +72,10 @@ def create_user():
     
 
 @api_bp.route('/users/<id>', methods=['PUT'])
+@token_auth.login_required
 def update_user(id):
+    if token_auth.current_user().id != id:
+        error_response(403)
     data = request.get_json()
     print(data)
     user = db.get_or_404(User, id)
@@ -89,4 +97,3 @@ def update_user(id):
     db.session.commit()    
 
     return user.to_dict()
-

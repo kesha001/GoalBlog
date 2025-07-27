@@ -1,0 +1,66 @@
+For now app works without docker compose, so you need to have separate containers running
+I have:
+redis (from dockerhub) 6379:6379
+rabbitmq (from dockerhub) 5672:5672
+docker run -it --name rabbitmq -p 5672:5672 --network goalblog rabbitmq:management-alpine
+docker run -it --name redis -p 6379:6379--network goalblog redis:latest
+MySQL:
+docker run --hostname=20e854bfbf8d --env=MYSQL_ROOT_PASSWORD={password] \
+--env=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+--env=GOSU_VERSION=1.17 --env=MYSQL_MAJOR=innovation --env=MYSQL_VERSION=9.3.0-1.el9 \
+--env=MYSQL_SHELL_VERSION=9.3.0-1.el9 --volume=/var/lib/mysql --network=goalblog \
+--workdir=/ -p 3306:3306 --restart=no --runtime=runc -d mysql:oraclelinux9
+Elasticsearch:
+docker run --name es01 --net goalblog -p 9200:9200 -it -m 2GB \
+-e discovery.type=single-node -e xpack.security.enabled=false
+
+Running main application:
+docker run \
+-e SECRET_KEY={} \
+-e MAIL_PORT=587 \
+-e MAIL_USERNAME={username} \
+-e MAIL_PASSWORD={} \
+-e MAIL_SERVER=smtp.gmail.com \
+-e MAIL_USE_TLS=True \
+-e SQLALCHEMY_DATABASE_URI=mysql+pymysql://{}:{}@goalblog-mysql/goalblogdb \
+-e ELASTIC_SEARCH_URI=http://es01:9200 \
+-e ADMIN_EMAIL={} \
+-e CELERY_BROKER_URI=amqp://rabbitmq:5672 \
+-e CELERY_BACKEND_URI=redis://redis:6379 \
+--network goalblog \
+--name goalblog -p 0.0.0.0:8000:5000 --rm goalblog_flask
+
+Run celery workers container
+docker run \
+-e SECRET_KEY={} \
+-e MAIL_PORT=587 \
+-e MAIL_USERNAME={} \
+-e MAIL_PASSWORD={} \
+-e MAIL_SERVER=smtp.gmail.com \
+-e MAIL_USE_TLS=True \
+-e SQLALCHEMY_DATABASE_URI=mysql+pymysql://{}:{}@goalblog-mysql/goalblogdb \
+-e ELASTIC_SEARCH_URI=http://es01:9200 \
+-e ADMIN_EMAIL={} \
+-e CELERY_BROKER_URI=amqp://rabbitmq:5672 \
+-e CELERY_BACKEND_URI=redis://redis:6379 \
+--network goalblog \
+--entrypoint celery \
+--name goalblog_worker --rm goalblog_flask \
+-A goalblog.celery_app worker --loglevel=INFO --concurrency 4 -P eventlet
+
+.env variables
+SECRET_KEY=
+MAIL_PORT=
+MAIL_USERNAME=
+MAIL_PASSWORD=
+MAIL_SERVER=smtp.gmail.com
+MAIL_USE_TLS=True
+MAIL_USE_SSL=False
+SQLALCHEMY_DATABASE_URI=mysql+pymysql://{}:{}@127.0.0.1:3306/goalblogdb
+ELASTIC_SEARCH_URI=http://localhost:9200
+ADMIN_EMAIL={}
+CELERY_BROKER_URI=amqp://localhost:5672
+CELERY_BACKEND_URI=redis://localhost:6379
+
+
+

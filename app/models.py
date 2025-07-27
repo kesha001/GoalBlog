@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from app import db, login_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from hashlib import sha256
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask import current_app, g
@@ -16,6 +16,8 @@ from celery.result import AsyncResult
 from celery import signature
 
 from flask import url_for
+
+import secrets
 
 
 
@@ -74,6 +76,9 @@ class User(PaginateAPIMixin, db.Model, UserMixin):
 
     last_read_messages: so.Mapped[Optional[datetime]] = so.mapped_column(default=lambda: datetime.now(timezone.utc))
 
+    api_token: so.Mapped[Optional[str]] = so.mapped_column(sa.String(64), unique=True)
+    api_token_expiration_datetime: so.Mapped[Optional[datetime]]
+
     followers: so.WriteOnlyMapped['User'] = so.relationship(
         "User",
         secondary= user_following,
@@ -95,7 +100,6 @@ class User(PaginateAPIMixin, db.Model, UserMixin):
                                                                        foreign_keys='Message.recipient_id')
     messages_sent: so.WriteOnlyMapped['Message'] = so.relationship(back_populates="author",
                                                                        foreign_keys='Message.author_id')
-    
 
     notifications: so.WriteOnlyMapped['Notification'] = so.relationship(back_populates='user')
 
@@ -107,6 +111,31 @@ class User(PaginateAPIMixin, db.Model, UserMixin):
         if password:
             self.set_password(password)
 
+    def get_token(self, expiration_in=3600):
+        now = datetime.now(timezone.utc)
+        if self.api_token and \
+            self.api_token_expiration_datetime.replace(tzinfo=timezone.utc) > now + timedelta(minutes=1):
+            return self.api_token
+        self.api_token = secrets.token_urlsafe(32)
+        self.api_token_expiration_datetime = now + timedelta(expiration_in)
+        db.session.add(self)
+        return self.api_token
+
+    def revoke_token(self):
+        now = datetime.now(timezone.utc)
+        self.api_token_expiration_datetime = now - timedelta(seconds=1)
+
+    @staticmethod
+    def check_token(token):
+        user = db.session.scalar(sa.select(User).where(User.api_token==token))
+        if not user:
+            return None
+        now = datetime.now(timezone.utc)
+        token_expired = user.api_token_expiration_datetime.replace(tzinfo=timezone.utc) < now
+        if token_expired:
+            return None
+        
+        return user
 
     def to_dict(self, include_email=False):
         user_data = {
